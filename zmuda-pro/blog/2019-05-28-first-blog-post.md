@@ -1,8 +1,8 @@
 ---
 slug: first-blog-post
 title: First Blog Post
-authors: [slorber, yangshun]
-tags: [hola, docusaurus]
+authors: adzik
+tags: [kubernetes]
 ---
 
 Lorem ipsum dolor sit amet...
