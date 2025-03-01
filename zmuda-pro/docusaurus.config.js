@@ -37,7 +37,7 @@ const config = {
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
         docs: {
-          routeBasePath: '/resume',
+          routeBasePath: '/aboutme',
           path: 'content',
           sidebarPath: './sidebars.js',
         },
@@ -74,7 +74,7 @@ const config = {
         items: [
           {to: '/', label: 'Blog', position: 'left'},
           {
-            to: '/resume',
+            to: '/aboutme',
             position: 'left',
             label: 'About me',
           },
