@@ -1,11 +1,23 @@
 kubernetes:
-  label: Kubernetes
+  label: kubernetes
   permalink: /kubernetes
 
 security:
-  label: Security
+  label: security
   permalink: /security
 
 hello:
-  label: Hello
+  label: hello
   permalink: /hello
+
+nginx:
+  label: nginx
+  permalink: /nginx
+
+cloudflare:
+  label: cloudflare
+  permalink: /cloudflare
+
+crowdsec:
+  label: crowdsec
+  permalink: /crowdsec
