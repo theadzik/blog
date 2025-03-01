@@ -5,3 +5,7 @@ kubernetes:
 security:
   label: Security
   permalink: /security
+
+hello:
+  label: Hello
+  permalink: /hello
