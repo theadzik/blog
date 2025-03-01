@@ -128,3 +128,13 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Docusaurus
+## Production
+build/
+
+## Generated files
+.cache-loader
+
+## Misc
+.DS_Store
