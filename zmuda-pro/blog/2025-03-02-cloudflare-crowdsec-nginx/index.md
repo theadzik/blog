@@ -27,7 +27,7 @@ seeing my ingress logs made me uneasy.
 A screen full of log entries, all arriving within a second. None of these requests were legitimate.
 It became clear that my cluster was constantly being probed for weaknesses.
 
-I didn’t want to deal with hundreds of automated scans every day, so I decided to take action:
+I didn't want to deal with hundreds of automated scans every day, so I decided to take action:
 
 1. Stop exposing ports on my public IP address.
 2. Block requests that scan for known vulnerabilities.
@@ -123,11 +123,12 @@ controller:
 > I'm using the ingress-nginx Helm chart version `4.11.x` for this reason.
 
 While Cloudflare protects against DDoS attacks, what about vulnerability scanners flooding our logs?
-[CrowdSec](https://app.crowdsec.net/) helps automatically ban known malicious IPs.
+[CrowdSec](https://www.crowdsec.net/) helps automatically ban known malicious IPs.
 
 ### Installing CrowdSec
 
-I installed CrowdSec using their [Helm chart](https://github.com/crowdsecurity/helm-charts/blob/main/charts/crowdsec/README.md).
+I followed [CrowdSec's documentation](https://doc.crowdsec.net/u/getting_started/installation/kubernetes)
+to install it.
 
 To make CrowdSec recognize `X-Forwarded-For` headers, update its configuration:
 
