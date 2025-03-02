@@ -15,15 +15,19 @@ to block as many threats as possible so I can sleep peacefully at night.
 
 ## Introduction
 
-When I first built my cluster, I took the simplest approach to expose my website.
+When I first built my cluster, I took the simplest approach to exposing my website.
 I bought a domain, forwarded port 443 on my router, and created a DNS entry.
 Finally, I set up [cert-manager](https://cert-manager.io/), and my website was live. Yay!
 
 Even though I knew that any public IP address or website would be scanned for vulnerabilities,
-looking at my ingress logs made me uneasy.
-I wanted to add security layers to mitigate these threats.
+seeing my ingress logs made me uneasy.
 
-I decided to do two things:
+![ingress logs](logs.webp)
+
+A screen full of log entries, all arriving within a second. None of these requests were legitimate.
+It became clear that my cluster was constantly being probed for weaknesses.
+
+I didn’t want to deal with hundreds of automated scans every day, so I decided to take action:
 
 1. Stop exposing ports on my public IP address.
 2. Block requests that scan for known vulnerabilities.
