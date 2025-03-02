@@ -25,7 +25,7 @@ I wanted to make sure I put some security layers, so I can sleep better at night
 
 I decided to do two things:
 
-1. Stop exposing my public IP address (This is also a great way if your ISP has CG-NAT)
+1. Stop exposing ports on my public IP address.
 1. Block requests that scan for known vulnerabilities.
 
 ## Act 1 - Cloudflare tunnels
@@ -36,11 +36,13 @@ I decided to use
 
 When creating a Public Hostname in the dashboard I used:
 
+![cloudflare](cloudflare.webp)
+
 * Subdomain: left empty
 * Domain: `zmuda.pro`
 * Path: left empty
 * Type: `HTTPS`
-* URL: `ingress-nginx-controller.ingress-nginx.svc.cluster.local:443` my internal ingress-controller service address
+* URL: `ingress-nginx-controller.ingress-nginx.svc.cluster.local:443` - internal ingress-controller service address
 * Additional application settings:
     * TLS -> Origin Server Name: `zmuda.pro`
     * TLS -> HTTP2 connection: Enabled
@@ -83,7 +85,7 @@ To create secret you can use this command, use your own token created on the das
 kubectl create secret generic tunnel-credentials --from-literal credentials.json=eyJBY...
 ```
 
-You now should be able to visit your website using tunnels!
+You now should be able to visit your website using tunnels! We should now close ports on our router.
 
 ### Changes to nginx
 
@@ -117,19 +119,46 @@ controller:
 
 
 DDoS protection is nice, but what about scanners we saw in our logs?
-Use [crowdsec](https://app.crowdsec.net/security-engines)
+Use [crowdsec](https://app.crowdsec.net/)
 to ban known malicious IPs.
 
-### Portal
+### Installing crowdsec
 
-What to do on portal?
+I installed CrowdSec using provided
+[helm chart](https://github.com/crowdsecurity/helm-charts/blob/main/charts/crowdsec/README.md).
 
-### Changes to ingress-nginx
+The important part is telling crowdsec to use `X-Forwarded-For` headers.
 
 ```yaml
 # values.yaml
-
-values:
-  go:
-    here: "elo"
+config:
+  config.yaml.local: |
+    api:
+      server:
+        use_forwarded_for_headers: true
+agent:
+  acquisition:
+    - namespace: ingress-nginx
+      podName: ingress-nginx-*
+      program: nginx-ingress-controller
+# The rest of config
 ```
+
+### Changes to ingress-nginx
+
+The last step is to enable bouncer plugin in ingress-nginx. 
+No real gotchas here. Just follow the [official guide](https://docs.crowdsec.net/u/bouncers/ingress-nginx).
+
+To make it easier to maintain, I created a separate `crowdsec-values.yaml` file
+to pass along standard `values.yaml` file for ingres-nginx.
+
+After deploying all of that we can check our [crowdsec alerts](https://app.crowdsec.net/alerts) list
+
+![crowdsec](crowdsec.webp)
+
+Looks like it's doing its job.
+
+## Summary
+
+With all that I feel confident that my cluster is safe.
+Nobody can DDoS me since they would need to bring down cloudflare first.
