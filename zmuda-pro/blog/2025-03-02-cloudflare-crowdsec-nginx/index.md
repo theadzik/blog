@@ -33,8 +33,8 @@ I decided to do two things:
 To address the first point, I decided to use
 [Cloudflare Tunnels](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/get-started/create-remote-tunnel/).
 
-First, we need to delete DNS entries we have pointing to our public IP.
-Then we can set a Public Hostname in the Cloudflare dashboard (which will recreate the DNS entry).
+First, we need to delete DNS entries pointing to our public IP.
+Then, we can set a Public Hostname in the Cloudflare dashboard (which will recreate the DNS entry).
 I used the following settings:
 
 ![Cloudflare](cloudflare.webp)
@@ -48,8 +48,8 @@ I used the following settings:
   - **TLS → Origin Server Name**: `zmuda.pro`
   - **TLS → HTTP2 Connection**: Enabled
 
-The **Origin Server Name** is crucial - it tells Cloudflare what subject name to expect on served certificate.
-If you don't have cert-manager set up, you can change the **Type** to `HTTP` instead and update **URL** to use port `80`.
+The **Origin Server Name** is crucial - it tells Cloudflare what subject name to expect on the served certificate.
+If you don't have cert-manager set up, you can change the **Type** to `HTTP` instead and update the **URL** to use port `80`.
 
 With Cloudflare configured, it's time to install the client.
 
@@ -89,12 +89,12 @@ kubectl create secret generic tunnel-credentials --from-literal credentials.json
 Your website should now be accessible via Cloudflare Tunnels!
 You can now safely close the exposed ports on your router.
 
-> A note here: I tried setting exactly the same using CLI. For some reason
-> Origin Server Name was not working unless I entered it using the dashboard.
+> **Note:** I tried setting the same configuration using the CLI, but for some reason,
+> the Origin Server Name only worked when entered via the dashboard.
 
 ### Updating NGINX Configuration
 
-Since Cloudflare acts as a proxy, ingress-nginx logs will only show the IPs of cloudflared pods.
+Since Cloudflare acts as a proxy, ingress-nginx logs will only show the IPs of Cloudflared pods.
 To preserve real visitor IPs, update your ingress-nginx Helm values:
 
 ```yaml
@@ -119,7 +119,7 @@ controller:
 > I'm using the ingress-nginx Helm chart version `4.11.x` for this reason.
 
 While Cloudflare protects against DDoS attacks, what about vulnerability scanners flooding our logs?
-[CrowdSec](https://app.crowdsec.net/) helps by automatically banning known malicious IPs.
+[CrowdSec](https://app.crowdsec.net/) helps automatically ban known malicious IPs.
 
 ### Installing CrowdSec
 
@@ -159,4 +159,3 @@ With this setup, I feel confident that my cluster is secure.
 A DDoS attack would need to take down Cloudflare first, and CrowdSec ensures that known malicious actors are blocked automatically.
 
 Now I can sleep peacefully, knowing my website is well-protected. 😴
-
