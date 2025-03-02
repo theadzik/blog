@@ -7,57 +7,58 @@ toc_min_heading_level: 2
 toc_max_heading_level: 3
 ---
 
-Hosting a public website can be stressful. It's constantly being scanned for vulnerabilities.
-Today, I'll share how I used Cloudflare Tunnels, CrowdSec,
-and NGINX to block ~~all~~ as many threats as possible so I can sleep at night.
+Hosting a public website can be stressful - it's constantly being scanned for vulnerabilities.
+Today, I'll share how I used Cloudflare Tunnels, CrowdSec, and NGINX
+to block as many threats as possible so I can sleep peacefully at night.
 
 <!-- truncate -->
 
-## Intro
+## Introduction
 
-When I first built my cluster I went with the easy way to expose my website.
+When I first built my cluster, I took the simplest approach to expose my website.
 I bought a domain, forwarded port 443 on my router, and created a DNS entry.
-Lastly a quick setup of [cert-manager](https://cert-manager.io/) and my website was up. Yay!
+Finally, I set up [cert-manager](https://cert-manager.io/), and my website was live. Yay!
 
-Even though I knew that any public IP address, any website will be scanned for known vulnerabilities,
-looking at my ingress logs made me feel uneasy.
-I wanted to make sure I put some security layers, so I can sleep better at night.
+Even though I knew that any public IP address or website would be scanned for vulnerabilities,
+looking at my ingress logs made me uneasy.
+I wanted to add security layers to mitigate these threats.
 
 I decided to do two things:
 
 1. Stop exposing ports on my public IP address.
-1. Block requests that scan for known vulnerabilities.
+2. Block requests that scan for known vulnerabilities.
 
-## Act 1 - Cloudflare tunnels
+## Act 1 - Cloudflare Tunnels
 
-To achieve requirement no. 1,
-I decided to use
-[cloudflare tunnels](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/get-started/create-remote-tunnel/)
+To address the first point, I decided to use
+[Cloudflare Tunnels](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/get-started/create-remote-tunnel/).
 
-When creating a Public Hostname in the dashboard I used:
+First, we need to delete DNS entries we have pointing to our public IP.
+Then we can set a Public Hostname in the Cloudflare dashboard (which will recreate the DNS entry).
+I used the following settings:
 
-![cloudflare](cloudflare.webp)
+![Cloudflare](cloudflare.webp)
 
-* Subdomain: left empty
-* Domain: `zmuda.pro`
-* Path: left empty
-* Type: `HTTPS`
-* URL: `ingress-nginx-controller.ingress-nginx.svc.cluster.local:443` - internal ingress-controller service address
-* Additional application settings:
-    * TLS -> Origin Server Name: `zmuda.pro`
-    * TLS -> HTTP2 connection: Enabled
+- **Subdomain**: Left empty
+- **Domain**: `zmuda.pro`
+- **Path**: Left empty
+- **Type**: `HTTPS`
+- **URL**: `ingress-nginx-controller.ingress-nginx.svc.cluster.local:443` (internal ingress-controller service address)
+- **Additional application settings**:
+  - **TLS → Origin Server Name**: `zmuda.pro`
+  - **TLS → HTTP2 Connection**: Enabled
 
-The `Origin Server Name` is important. We need to tell ingress-nginx which site to serve and which certificate to use.
-If you don't have cert-manager set up, you can also change the `Type` to `HTTP`.
+The **Origin Server Name** is crucial - it tells Cloudflare what subject name to expect on served certificate.
+If you don't have cert-manager set up, you can change the **Type** to `HTTP` instead and update **URL** to use port `80`.
 
-We are ready on cloudflare side. Time to install a client.
+With Cloudflare configured, it's time to install the client.
 
-### Install Cloudflared
+### Installing Cloudflared
 
-I found example
-configuration [here](https://github.com/cloudflare/argo-tunnel-examples/blob/master/named-tunnel-k8s/cloudflared.yaml).
+I found an example configuration
+[here](https://github.com/cloudflare/argo-tunnel-examples/blob/master/named-tunnel-k8s/cloudflared.yaml).
 
-I created my own ConfigMap. I mirrored ingress rules from the previous step, and added
+I created my own ConfigMap, mirroring the public hostname settings from the previous step:
 
 ```yaml
 apiVersion: v1
@@ -79,19 +80,22 @@ data:
       - service: http_status:404
 ```
 
-To create secret you can use this command, use your own token created on the dashboard.
+To create the secret, use this command with your own token from the Cloudflare dashboard:
 
 ```bash
 kubectl create secret generic tunnel-credentials --from-literal credentials.json=eyJBY...
 ```
 
-You now should be able to visit your website using tunnels! We should now close ports on our router.
+Your website should now be accessible via Cloudflare Tunnels!
+You can now safely close the exposed ports on your router.
 
-### Changes to nginx
+> A note here: I tried setting exactly the same using CLI. For some reason
+> Origin Server Name was not working unless I entered it using the dashboard.
 
-Because we are now using cloudflare as a proxy, if we check logs of our ingress-nginx. We will only see IP of
-cloudflared pods.
-We want to keep the real IP our visitors so in our ingress-nginx helm values we need to add a few lines:
+### Updating NGINX Configuration
+
+Since Cloudflare acts as a proxy, ingress-nginx logs will only show the IPs of cloudflared pods.
+To preserve real visitor IPs, update your ingress-nginx Helm values:
 
 ```yaml
 # values.yaml
@@ -103,31 +107,25 @@ controller:
     use-forwarded-headers: "true"
 ```
 
-* `enable-real-ip`: We enable it so we can use `forwarded-for-header` below.
-* `forwarded-for-header`: CloudFlare sends real user IP in `CF-Connecting-IP` header.
-* `proxy-real-ip-cidr`: We use a list of [CloudFlare's IP addresses](https://www.cloudflare.com/ips-v4/#)
-  and our private `10.0.0.0/8`.
-* `use-forwarded-headers`: We enable `X-Forwarded-*` headers. We will need it for CrowdSec later.
+- `enable-real-ip`: Enables real user IP logging.
+- `forwarded-for-header`: Cloudflare sends the real user IP in the `CF-Connecting-IP` header.
+- `proxy-real-ip-cidr`: Includes Cloudflare's [official IP list](https://www.cloudflare.com/ips-v4/#) and private `10.0.0.0/8` addresses.
+- `use-forwarded-headers`: Enables `X-Forwarded-*` headers, which we'll need for CrowdSec later.
 
 ## Act 2 - CrowdSec
 
-> :warning: Ingress Nginx Version 1.12 or higher currently is not supported by CrowdSec
-> due to removal of Lua plugins support.
-> See [this issue](https://github.com/crowdsecurity/cs-openresty-bouncer/issues/60)
-> for latest news.
-> I'm using ingress-nginx helm chart version 4.11.x for that reason.
+> :warning: **Warning:** Ingress NGINX version 1.12 or higher is not currently supported by CrowdSec due to the removal of Lua plugin support.
+> See [this issue](https://github.com/crowdsecurity/cs-openresty-bouncer/issues/60) for updates.
+> I'm using the ingress-nginx Helm chart version `4.11.x` for this reason.
 
+While Cloudflare protects against DDoS attacks, what about vulnerability scanners flooding our logs?
+[CrowdSec](https://app.crowdsec.net/) helps by automatically banning known malicious IPs.
 
-DDoS protection is nice, but what about scanners we saw in our logs?
-Use [crowdsec](https://app.crowdsec.net/)
-to ban known malicious IPs.
+### Installing CrowdSec
 
-### Installing crowdsec
+I installed CrowdSec using their [Helm chart](https://github.com/crowdsecurity/helm-charts/blob/main/charts/crowdsec/README.md).
 
-I installed CrowdSec using provided
-[helm chart](https://github.com/crowdsecurity/helm-charts/blob/main/charts/crowdsec/README.md).
-
-The important part is telling crowdsec to use `X-Forwarded-For` headers.
+To make CrowdSec recognize `X-Forwarded-For` headers, update its configuration:
 
 ```yaml
 # values.yaml
@@ -141,24 +139,24 @@ agent:
     - namespace: ingress-nginx
       podName: ingress-nginx-*
       program: nginx-ingress-controller
-# The rest of config
 ```
 
-### Changes to ingress-nginx
+### Updating Ingress-NGINX for CrowdSec
 
-The last step is to enable bouncer plugin in ingress-nginx. 
-No real gotchas here. Just follow the [official guide](https://docs.crowdsec.net/u/bouncers/ingress-nginx).
+To enable CrowdSec's bouncer plugin in ingress-nginx, follow the [official guide](https://docs.crowdsec.net/u/bouncers/ingress-nginx).
 
-To make it easier to maintain, I created a separate `crowdsec-values.yaml` file
-to pass along standard `values.yaml` file for ingres-nginx.
+To simplify maintenance, I created a separate `crowdsec-values.yaml` file and passed it along with the standard `values.yaml` for ingress-nginx.
 
-After deploying all of that we can check our [crowdsec alerts](https://app.crowdsec.net/alerts) list
+After deploying everything, you can check your [CrowdSec alerts](https://app.crowdsec.net/alerts).
 
-![crowdsec](crowdsec.webp)
+![CrowdSec](crowdsec.webp)
 
-Looks like it's doing its job.
+It looks like it's working!
 
 ## Summary
 
-With all that I feel confident that my cluster is safe.
-Nobody can DDoS me since they would need to bring down cloudflare first.
+With this setup, I feel confident that my cluster is secure.
+A DDoS attack would need to take down Cloudflare first, and CrowdSec ensures that known malicious actors are blocked automatically.
+
+Now I can sleep peacefully, knowing my website is well-protected. 😴
+
