@@ -125,6 +125,7 @@ controller:
 
 While Cloudflare protects against DDoS attacks, what about vulnerability scanners flooding our logs?
 [CrowdSec](https://www.crowdsec.net/) helps automatically ban known malicious IPs.
+We will also enable AppSec component, which acts as Web Application Firewall (WAF).
 
 ### Installing CrowdSec
 
@@ -135,11 +136,12 @@ To make CrowdSec recognize `X-Forwarded-For` headers, update its configuration:
 
 ```yaml
 # values.yaml
+container_runtime: containerd
 config:
   config.yaml.local: |
     api:
       server:
-        use_forwarded_for_headers: true
+        use_forwarded_for_headers: true # This is the important line
         auto_registration:
           enabled: true
           token: "${REGISTRATION_TOKEN}"
@@ -153,8 +155,31 @@ agent:
   env:
     - name: COLLECTIONS
       value: "crowdsecurity/nginx"
-# The rest of the config
+lapi:
+  env:
+    - name: ENROLL_INSTANCE_NAME
+      value: 'homelab-prod'
+    - name: ENROLL_TAGS
+      value: 'k8s k3s nginx'
+    - name: BOUNCER_KEY_nginx
+      value: 'your-key' # generated with `cscli bouncers add -n <bouncer_name>, use the same key in ingress-nginx values in API_KEY
+appsec:
+  enabled: true
+  replicas: 1
+  acquisitions:
+    - source: appsec
+      listen_addr: "0.0.0.0:7422"
+      path: /
+      appsec_config: crowdsecurity/appsec-default
+      labels:
+        type: appsec
+  env:
+    - name: COLLECTIONS
+      value: "crowdsecurity/appsec-virtual-patching crowdsecurity/appsec-generic-rules"
 ```
+
+In this example, I put secrets directly in environment variables for simplicity.
+However, it is recommended to use [Kubernetes secrets](https://kubernetes.io/docs/tasks/inject-data-application/distribute-credentials-secure/#define-container-environment-variables-using-secret-data) for managing sensitive data securely.
 
 ### Updating Ingress-NGINX for CrowdSec
 
