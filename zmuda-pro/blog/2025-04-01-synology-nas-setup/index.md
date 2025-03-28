@@ -1,6 +1,6 @@
 ---
-slug: longhorn-to-synology
-title: Migrate persistent volumes from Longhorn to Synology NAS
+slug: synology-nas-setup
+title: Synology DS923+ as a storage server for Kubernetes
 authors: adzik
 tags: [kubernetes, storage, argocd, synology]
 toc_min_heading_level: 2
@@ -16,16 +16,18 @@ I decided to move my data to dedicated storage server.
 
 <!-- truncate -->
 
-## Introduction
+## NAS Setup
 
 My Synology DS923+ was delivered today, along with 2 Synology HAT3310-12T drives and SNV3410-400G SSD for caching.
-I decided to use Synology, because they provide Kubernetes CSI drivers for their NAS devices.
+I decided to use Synology, because of their Synology Hybrid Raid (SHR). It allows to seamlessly
+add more disks and create storage pools on drives with different sizes. They also provide Kubernetes CSI drivers which
+was crucial for me.
 
 ![Synology DS923+](./nas.webp)
 
 After installing the drives, but before I connected the NAS to the network, I logged in to my router
-and reserved 2 IP address for the NAS. I named it `nas-1-1`. DS923+ has 2 separate network adapters, so I also
-reserved an IP address for the second adapter, but I won't be named until I connect it to the network.
+and reserved 2 IP address for the NAS. DS923+ has 2 network adapters, so I
+reserved two IP addresses. I named the first one `nas-1-1` and the second one will be `nas-1-2`.
 
 ![Router IP reservation](./dhcp.webp)
 
@@ -34,24 +36,24 @@ on my laptop and connected to the NAS.
 
 ![Finds Synology](./finds.webp)
 
-Quick setup was easy, I just had to choose the disks and the RAID type.
-I chose SHR (Synology Hybrid RAID) with 1 disk fault tolerance.
+Going through the wizard was quick and eazy. I choose both of my disks,
+set RAID type to SHR with 1 disk fault tolerance. I used recommended Btrfs file system.
 
 ![storage pool](./storage-pool.webp)
 
-I also wanted to make sure that my drive are healthy,
-so I chose to run the drive check. It will take about 13 hours, so I will check it tomorrow.
+I also wanted to make sure that my drives were not damaged in transport,
+so I chose to run the drive check. It will take about 13 hours. I will come back to check results later.
 
 ![drive check](./drive-check.webp)
 
-Last thing I needed to do was to create a user that will be used by the CSI driver.
+The last thing I needed to do was to create a user that will be used by the CSI driver.
 To do that I opened the `Control Panel` and clicked on `User & Group`.
 I named the user `kubernetes` so it's clear what it does.
 The account needs to be an administrator, so a strong password is a must.
 
 ![kubernetes user](./kubernetes-user.webp)
 
-## Synology CSI Driver for Kubernetes
+## Installing CSI Driver for Kubernetes
 
 With the drive check running it's time to prepare the cluster for data migration.
 Synology CSI Driver for Kubernetes is available
@@ -87,7 +89,8 @@ spec:
       selfHeal: true
 ```
 
-Then I copied contents of [deploy/kubernetes/v1.20](https://github.com/SynologyOpenSource/synology-csi/tree/main/deploy/kubernetes/v1.20)
+Then I copied contents
+of [deploy/kubernetes/v1.20](https://github.com/SynologyOpenSource/synology-csi/tree/main/deploy/kubernetes/v1.20)
 directory to my repository under `manifests/base/synology-csi`.
 
 Now I needed to pass client-info configuration to the driver.
@@ -109,7 +112,7 @@ It feels a bit weird that my NAS configuration goes into `client` section, but t
 > Don't put unencrypted secrets in your repository.
 
 Now we need to edit `storage-class.yml` to match our storage pool.
-I want to have 2 storage classes, one for `Retain` and one for `Delete` policy.
+I want to have 2 storage classes, one with `Retain` and one for `Delete` policy.
 Both of them should be using `btrfs` file system type.
 
 ```yaml
@@ -186,6 +189,8 @@ secretGenerator:
 I pushed the changes to my repository and waited for ArgoCD to deploy the driver.
 
 ![ArgoCD](./argocd.webp)
+
+## Testing
 
 Once done I could test it everything works by creating a PVC:
 
