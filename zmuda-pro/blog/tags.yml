@@ -21,3 +21,15 @@ cloudflare:
 crowdsec:
   label: crowdsec
   permalink: /crowdsec
+
+storage:
+  label: storage
+  permalink: /storage
+
+argocd:
+  label: argocd
+  permalink: /argocd
+
+synology:
+  label: synology
+  permalink: /synology
