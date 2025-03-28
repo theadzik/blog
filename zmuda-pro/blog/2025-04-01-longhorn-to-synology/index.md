@@ -2,7 +2,7 @@
 slug: longhorn-to-synology
 title: Migrate persistent volumes from Longhorn to Synology NAS
 authors: adzik
-tags: [kubernetes, storage]
+tags: [kubernetes, storage, argocd, synology]
 toc_min_heading_level: 2
 toc_max_heading_level: 3
 ---
@@ -95,7 +95,6 @@ I saved the file in `manifests/base/synology-csi/configs/client-info-secret.yaml
 
 ```yaml
 # client-info-secret.yml
----
 clients:
   - host: "192.168.0.6"
     port: 5000
@@ -127,6 +126,7 @@ reclaimPolicy: Retain
 allowVolumeExpansion: true
 
 ---
+
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
@@ -156,24 +156,66 @@ parameters:
   is_locked: 'false'
 ```
 
-Lastly, I created `kustomization.yaml` file to glue it all together:
+Lastly, we need to make sure we have CRDs installed for our snapshotter.
+We can add a link to git repo directly in our `kustomization.yaml` file.
 
 ```yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: synology-csi
 resources:
+  - github.com/kubernetes-csi/external-snapshotter/client/config/crd?ref=v8.2.0
   - controller.yml
   - csi-driver.yml
   - namespace.yml
   - node.yml
   - storage-class.yml
-  - snapshotter/snapshotter.yaml
-  - volume-snapshot-class.yml
+  - snapshotter/snapshotter.yml
+  - snapshotter/volume-snapshot-class.yml
 secretGenerator:
   - name: client-info-secret
     files:
-      - configs/client-info-secret.yaml
+      - client-info.yml=configs/client-info-secret.yml
 ```
 
+> Note: I'm using `kustomize` to generate the secret from the file.
+> To automatically encrypt secrets I need to add "secret" to the name.
+> The driver expects the key in secret to be named `client-info.yml` so I had to
+> rename the file in the secretGenerator.
+
 I pushed the changes to my repository and waited for ArgoCD to deploy the driver.
+
+![ArgoCD](./argocd.webp)
+
+Once done I could test it everything works by creating a PVC:
+
+```yaml
+# test.aml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: test
+  namespace: test
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+  storageClassName: synology-iscsi-delete
+```
+
+```bash
+k apply -f test.yaml -n test
+$ persistentvolumeclaim/test created
+k get pvc -n test
+$ NAME   STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS            VOLUMEATTRIBUTESCLASS   AGE
+$ test   Bound    pvc-0f0fcd10-c81e-43c7-a325-600f970c2508   2Gi        RWX            synology-iscsi-retain   <unset>                 73s
+```
+
+Looks like everything is working but let's check Synology to make sure
+the volume was created.
+
+![Synology LUN](synology-lun.webp)
+
+Success! The volume was created and is ready to be used.
