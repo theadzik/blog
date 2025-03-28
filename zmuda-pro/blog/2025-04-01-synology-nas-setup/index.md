@@ -8,7 +8,7 @@ toc_max_heading_level: 3
 ---
 
 Some services require persistent storage.
-You could use `hostPath` volume or `local-storage` storage class provided by k3s,
+You could use **hostPath** volume or **local-storage** storage class provided by k3s,
 but it couples the pod with the node.
 Longhorn fixes this problem by providing a distributed storage system,
 but I found it to be slow and unreliable on my low-end hardware.
@@ -31,7 +31,7 @@ They also provide Kubernetes CSI drivers, which was crucial for me.
 After installing the drives, but before I connected the NAS to the network,
 I logged in to my router and reserved 2 IP addresses for the NAS.
 The DS923+ has 2 network adapters, so I reserved two IP addresses.
-I named the first one `nas-1-1` and the second one will stay blank,
+I named the first one **nas-1-1** and the second one will stay blank,
 until I connect it to the router.
 
 ![Router IP reservation](./dhcp.webp)
@@ -62,8 +62,8 @@ I will come back to check the results later.
 ### Creating a User for the CSI Driver
 
 The last thing I needed to do was to create a user that will be used by the CSI driver.
-To do that, I opened the `Control Panel` and clicked on `User & Group`.
-I named the user `kubernetes` so it's clear what it does.
+To do that, I opened the **User & Group** section under **Control Panel**.
+I named the user **kubernetes** so it's clear what it does.
 The account needs to be an administrator, so a strong password is a must.
 
 ![Kubernetes User](./kubernetes-user.webp)
@@ -75,12 +75,12 @@ The Synology CSI Driver for Kubernetes is available on
 [GitHub/SynologyOpenSource/synology-csi](https://github.com/SynologyOpenSource/synology-csi).
 
 The instructions ask to clone the repository,
-create a `client-config.yaml` file, and run a script to deploy the driver.
+create a **client-config.yaml** file, and run a script to deploy the driver.
 However, I'm using ArgoCD, so I want my configuration to be in manifests in my repository.
 
 ### Creating Application Manifest
 
-I'll start with the `Application` manifest:
+I'll start with the **Application** manifest:
 
 ```yaml title="manifests/applications/synology-csi.yaml"
 apiVersion: argoproj.io/v1alpha1
@@ -108,13 +108,13 @@ spec:
 
 Then I copied the contents
 of [deploy/kubernetes/v1.20](https://github.com/SynologyOpenSource/synology-csi/tree/main/deploy/kubernetes/v1.20)
-directory to my repository under `manifests/base/synology-csi`.
+directory to my repository under **manifests/base/synology-csi**.
 
 ### Configuring Client Info
 
 Now I needed to pass client-info configuration to the driver.
 It feels a bit weird that my NAS configuration goes into the **clients** section, but that is correct.
-I saved the file in `manifests/base/synology-csi/configs/client-info-secret.yml`.
+I saved the file in **manifests/base/synology-csi/configs/client-info-secret.yml**.
 
 ```yaml title="manifests/base/synology-csi/configs/client-info-secret.yml"
 clients:
@@ -125,14 +125,14 @@ clients:
     password: "correct-horse-battery-staple"
 ```
 
-> Note: I use `git-crypt` to encrypt secrets in my repository and a custom ArgoCD image that can decrypt them.
+> Note: I use **git-crypt** to encrypt secrets in my repository and a custom ArgoCD image that can decrypt them.
 > Don't put unencrypted secrets in your repository.
 
 ### Editing Storage Class and Volume Snapshot Class
 
-Now we need to edit `storage-class.yml` to match our storage pool.
-I want to have 2 storage classes, one with `Retain` and one for `Delete` policy.
-Both of them should be using the `btrfs` file system type.
+Now we need to edit **storage-class.yml** to match our storage pool.
+I want to have 2 storage classes, one with **Retain** and one for **Delete** policy.
+Both of them should be using the **btrfs** file system type.
 
 ```yaml title="manifests/base/synology-csi/storage-class.yml"
 apiVersion: storage.k8s.io/v1
@@ -162,7 +162,7 @@ reclaimPolicy: Delete
 allowVolumeExpansion: true
 ```
 
-I made the Synology VolumeSnapshotClass default in `volume-snapshot-class.yml`.
+I made the Synology VolumeSnapshotClass default in **volume-snapshot-class.yml**.
 
 ```yaml title="manifests/base/synology-csi/volume-snapshot-class.yml"
 apiVersion: snapshot.storage.k8s.io/v1
@@ -181,7 +181,7 @@ parameters:
 ### Installing CRDs
 
 Lastly, we need to make sure we have CRDs installed for our snapshotter.
-We can add a link to the git repo directly in our `kustomization.yaml` file.
+We can add a link to the git repo directly in our **kustomization.yaml** file.
 
 ```yaml title="manifests/base/synology-csi/kustomization.yaml"
 apiVersion: kustomize.config.k8s.io/v1beta1
@@ -202,10 +202,10 @@ secretGenerator:
       - client-info.yml=configs/client-info-secret.yml
 ```
 
-> Note: I'm using `kustomize` to generate the secret from the file.
+> Note: I'm using **kustomize** to generate the secret from the file.
 > To automatically encrypt secrets, I need to add "secret" to the name.
-> The driver expects the key in the secret to be named `client-info.yml`,
-> so I had to rename the file in the `secretGenerator`.
+> The driver expects the key in the secret to be named **client-info.yml**,
+> so I had to rename the file in the **secretGenerator* section.
 
 I pushed the changes to my repository and waited for ArgoCD to deploy the driver.
 
