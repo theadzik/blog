@@ -548,6 +548,8 @@ automatically boots after power loss. I do it in the BIOS settings:
 ![bios settings wake on power](bios.webp)
 > Wake on Power is a feature that allows the server to automatically power on after a power loss.
 
+Because GMKTec G3 Plus doesn't have a sticker with MAC address on it, I also write it down from the BIOS settings.
+
 ### Installing OS
 
 <!-- TODO: Add screenshots -->
