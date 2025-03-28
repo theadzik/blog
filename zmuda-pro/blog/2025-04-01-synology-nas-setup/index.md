@@ -82,7 +82,7 @@ However, I'm using ArgoCD, so I want my configuration to be in manifests in my r
 
 I'll start with the `Application` manifest:
 
-```yaml
+```yaml title="manifests/applications/synology-csi.yaml"
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -113,10 +113,10 @@ directory to my repository under `manifests/base/synology-csi`.
 ### Configuring Client Info
 
 Now I needed to pass client-info configuration to the driver.
-I saved the file in `manifests/base/synology-csi/configs/client-info-secret.yaml`.
+It feels a bit weird that my NAS configuration goes into the **clients** section, but that is correct.
+I saved the file in `manifests/base/synology-csi/configs/client-info-secret.yml`.
 
-```yaml
-# client-info-secret.yml
+```yaml title="manifests/base/synology-csi/configs/client-info-secret.yml"
 clients:
   - host: "192.168.0.6"
     port: 5000
@@ -125,18 +125,16 @@ clients:
     password: "correct-horse-battery-staple"
 ```
 
-It feels a bit weird that my NAS configuration goes into **client** and not **server** section, but that is correct.
-
-> Note: I use git-crypt to encrypt secrets in my repository and a custom ArgoCD image that can decrypt them.
+> Note: I use `git-crypt` to encrypt secrets in my repository and a custom ArgoCD image that can decrypt them.
 > Don't put unencrypted secrets in your repository.
 
 ### Editing Storage Class and Volume Snapshot Class
 
 Now we need to edit `storage-class.yml` to match our storage pool.
 I want to have 2 storage classes, one with `Retain` and one for `Delete` policy.
-Both of them should be using `btrfs` file system type.
+Both of them should be using the `btrfs` file system type.
 
-```yaml
+```yaml title="manifests/base/synology-csi/storage-class.yml"
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
@@ -164,9 +162,9 @@ reclaimPolicy: Delete
 allowVolumeExpansion: true
 ```
 
-I made the Synology VolumeSnapshotClass default in `volume-snapshot.class.yml`
+I made the Synology VolumeSnapshotClass default in `volume-snapshot-class.yml`.
 
-```yaml
+```yaml title="manifests/base/synology-csi/volume-snapshot-class.yml"
 apiVersion: snapshot.storage.k8s.io/v1
 kind: VolumeSnapshotClass
 metadata:
@@ -183,9 +181,9 @@ parameters:
 ### Installing CRDs
 
 Lastly, we need to make sure we have CRDs installed for our snapshotter.
-We can add a link to git repo directly in our `kustomization.yaml` file.
+We can add a link to the git repo directly in our `kustomization.yaml` file.
 
-```yaml
+```yaml title="manifests/base/synology-csi/kustomization.yaml"
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: synology-csi
@@ -205,9 +203,9 @@ secretGenerator:
 ```
 
 > Note: I'm using `kustomize` to generate the secret from the file.
-> To automatically encrypt secrets I need to add "secret" to the name.
-> The driver expects the key in secret to be named `client-info.yml` so I had to
-> rename the file in the secretGenerator.
+> To automatically encrypt secrets, I need to add "secret" to the name.
+> The driver expects the key in the secret to be named `client-info.yml`,
+> so I had to rename the file in the `secretGenerator`.
 
 I pushed the changes to my repository and waited for ArgoCD to deploy the driver.
 
@@ -215,10 +213,9 @@ I pushed the changes to my repository and waited for ArgoCD to deploy the driver
 
 ## Testing
 
-Once done, I could test it everything works by creating a PVC:
+Once done, I could test if everything works by creating a PVC:
 
-```yaml
-# test.aml
+```yaml title="test.yaml"
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -241,9 +238,13 @@ NAME   STATUS   VOLUME                                     CAPACITY   ACCESS MOD
 test   Bound    pvc-0f0fcd10-c81e-43c7-a325-600f970c2508   2Gi        RWX            synology-iscsi-retain   <unset>                 73s
 ```
 
-Looks like everything is working but let's check Synology to make sure
-the volume was created.
+Looks like everything is working, but let's check Synology to make sure the volume was created.
 
-![Synology LUN](synology-lun.webp)
+![Synology LUN](./synology-lun.webp)
 
 Success! The volume was created and is ready to be used.
+
+## Link to code
+
+You can find the whole code in
+[my repository](https://github.com/theadzik/homelab/tree/4980b28b4cbe91bacafaca3ac18e7e1ba9bdf90c/manifests/base/synology-csi)
