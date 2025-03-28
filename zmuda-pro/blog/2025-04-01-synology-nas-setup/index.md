@@ -36,7 +36,7 @@ on my laptop and connected to the NAS.
 
 ![Finds Synology](./finds.webp)
 
-Going through the wizard was quick and eazy. I choose both of my disks,
+Going through the wizard was quick and easy. I chose both of my disks,
 set RAID type to SHR with 1 disk fault tolerance. I used recommended Btrfs file system.
 
 ![storage pool](./storage-pool.webp)
