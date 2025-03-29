@@ -263,4 +263,4 @@ Success! The volume was created and is ready to be used.
 ## Link to code
 
 You can find the whole code in
-[my repository](https://github.com/theadzik/homelab/tree/4980b28b4cbe91bacafaca3ac18e7e1ba9bdf90c/manifests/base/synology-csi)
+[my repository](https://github.com/theadzik/homelab/tree/0283009b5f7f23a0524948b5737466524a514bf8/manifests/base/synology-csi)
