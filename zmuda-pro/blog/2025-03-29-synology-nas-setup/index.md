@@ -125,8 +125,12 @@ clients:
     password: "correct-horse-battery-staple"
 ```
 
-> Note: I use **git-crypt** to encrypt secrets in my repository and a custom ArgoCD image that can decrypt them.
-> Don't put unencrypted secrets in your repository.
+:::danger
+
+I use **git-crypt** to encrypt secrets in my repository and a custom ArgoCD image that can decrypt them.
+Don't put unencrypted secrets in your repository.
+
+:::
 
 ### Editing Storage Class and Volume Snapshot Class
 
@@ -164,7 +168,11 @@ reclaimPolicy: Delete
 allowVolumeExpansion: true
 ```
 
-> Note: `formatOptions: '--nodiscard'` is important. Without it, I was not able to mound a drive bigger than a few GB.
+:::warning
+
+`formatOptions: '--nodiscard'` is important. Without it, I was not able to mount a drive bigger than a few GB.
+
+:::
 
 I made the Synology VolumeSnapshotClass default in **volume-snapshot-class.yml**.
 
@@ -206,10 +214,14 @@ secretGenerator:
       - client-info.yml=configs/client-info-secret.yml
 ```
 
-> Note: I'm using **kustomize** to generate the secret from the file.
-> To automatically encrypt secrets, I need to add "secret" to the name.
-> The driver expects the key in the secret to be named **client-info.yml**,
-> so I had to rename the file in the **secretGenerator* section.
+:::info
+
+I'm using **kustomize** to generate the secret from the file.
+To automatically encrypt secrets, I need to add "secret" to the name.
+The driver expects the key in the secret to be named **client-info.yml**,
+so I had to rename the file in the **secretGenerator** section.
+
+:::
 
 I pushed the changes to my repository and waited for ArgoCD to deploy the driver.
 
