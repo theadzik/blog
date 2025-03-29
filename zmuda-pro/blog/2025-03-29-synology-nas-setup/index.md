@@ -144,6 +144,7 @@ metadata:
 provisioner: csi.san.synology.com
 parameters:
   fsType: 'btrfs'
+  formatOptions: '--nodiscard'
 reclaimPolicy: Retain
 allowVolumeExpansion: true
 
@@ -158,9 +159,12 @@ metadata:
 provisioner: csi.san.synology.com
 parameters:
   fsType: 'btrfs'
+  formatOptions: '--nodiscard'
 reclaimPolicy: Delete
 allowVolumeExpansion: true
 ```
+
+> Note: `formatOptions: '--nodiscard'` is important. Without it, I was not able to mound a drive bigger than a few GB.
 
 I made the Synology VolumeSnapshotClass default in **volume-snapshot-class.yml**.
 
