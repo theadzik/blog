@@ -16,7 +16,7 @@ Today I'll show you how I prepare new nodes to be added to my cluster.
 ## Introduction
 
 Currently, I have a 2-node k3s cluster. One node runs on Raspberry Pi 5 8GB,
-and the other one is a GMKTec G3 Plus mini-pic with an Intel N150.
+and the other one is a GMKTec G3 Plus mini-pic with an Intel N150 CPU.
 
 I decided to homogenize my cluster and buy two more GMKTec G3 Plus minis to replace
 the Raspberry Pi. Luckily I use ansible and ArgoCD to manage my cluster, so adding new nodes
@@ -28,7 +28,8 @@ a new node, installing k3s using ansible, and deploying my workloads using ArgoC
 ## OS Selection
 
 I use Debian because it is lightweight and stable. I'll be installing it
-offline (because I'm too lazy to drag a monitor to my server closet where I have cable connection)
+offline (because I'm too lazy to drag a monitor to my server closet
+where I have cable connection)
 using a USB stick. I also want the setup to be repeatable and fast, so I'll use
 [Debian Preseeding](https://wiki.debian.org/DebianInstaller/Preseed) option to
 automate the installation as much as possible.
@@ -46,19 +47,17 @@ First I will generate a password hash that I will use to log in to my account.
 Preseed requires **crypt(3)** hash, which we can create using **openssl** binary.
 
 ```bash
-$ openssl passwd -salt 's&j1Sc))' 'correct-horse-battery-staple'
-$1$s&j1Sc))$k1lCL/JJ/QXuFyarblC2d/
+$ openssl passwd -salt 'U<v$+~4u' 'correct-horse-battery-staple'
+Hash: $1$U<v$+~4u$PiFombcarot0B92vnIQnT/
 ```
 
 The salt can be any random 8-character string. You don't need to write it down,
 it will become a part of hash itself.
 The second string is the actual password we will use.
 
-<!-- TODO: Try to find a funny hash? -->
-
 ### Generating SSH keys
 
-I will only use the password
+I will only use password
 for sudo access but will log in to the server with ssh keys.
 
 :::note
@@ -86,13 +85,13 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKk7j5NrdCVSvPiDBoqUM/VC5ltpWjXRqEgCyjptugmp
 
 ### Generating preseed.cfg
 
-## Creating an installation USB stick
+## Creating a writable installation USB stick
 
 1. Download the DVD/USB `.iso` file from the
    [Downloading Debian](https://www.debian.org/CD/http-ftp/#stable) page.
 2. Connect a USB stick to your computer and check its device name:
    ```bash
-   sudo fdisk -l
+   $ fdisk -l
    ```
    ![usb device](usb-device.webp)
 
@@ -120,35 +119,33 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKk7j5NrdCVSvPiDBoqUM/VC5ltpWjXRqEgCyjptugmp
    3. Now I'll mount the **.iso** file and copy its contents
       to USB.
 
-      <!-- TODO: Full commands -->
-
       ```bash
-      $ sudo mount -o loop /home/adzik/Downloads/debian-12.10.0-amd64-DVD-1.iso /mnt/cdrom
+      $ mount -o loop debian-12.4.0-amd64-netinst.iso /mnt/cdrom/
+      $ rsync -av /mnt/cdrom/ /mnt/data/
+      $ umount /mnt/cdrom
       ```
 
-4. Copy the preseed.cfg file
-5. Edit grub.
+4. Copy the preseed.cfg file to the root directory of USB
+   ```bash
+   $ cp /path/to/preseed.cfg /mnt/data/preseed.cfg
+   ```
+
+5. Because I want to provide a hostname during installation I need to change
+   the question priority. Normally the installer only asks critical level questions, but the hostname is
+   a high priority question. We should also add the preseed/file location so we don't need to
+   manually type it in. The root of the USB stick is available to the installer under /cdrom/ path.
 
 ```txt title="/mnt/data/boot/grub/grub.cfg"
-    menuentry --hotkey=a '... Automated install' {
+    menuentry --hotkey=a '... Automated install' { # This is the menu item we will pick during installation
         set background_color=black
-        linux    /install.amd/vmlinuz auto=true priority=high preseed/file=/cdrom/preseed.cfg vga=788 --- quiet
+        linux    /install.amd/vmlinuz auto=true priority=high preseed/file=/cdrom/preseed.cfg vga=788 --- quiet # edit this line
         initrd   /install.amd/initrd.gz
     }
 ```
 
-questions:
-ip address
-hostname
-
-3. Format the USB stick:
+6. When we are done we need to unmount the drive.
    ```bash
-   sudo mkfs.vfat -I /dev/sda
-   ```
-4. Copy the `.iso` file [to the USB stick](https://www.debian.org/releases/testing/amd64/ch04s03.en.html).
-   ```bash
-   sudo cp debian-12.10.0-amd64-DVD-1.iso /dev/sda
-   sudo sync /dev/sda
+   $ umount /mnt/data
    ```
 
 ## Node preparation
