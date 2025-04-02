@@ -44,16 +44,18 @@ and IP address.
 ### Generating password hash for my user
 
 First I will generate a password hash that I will use to log in to my account.
-Preseed requires **crypt(3)** hash, which we can create using **openssl** binary.
+We can put our password in plain text to the preseed.cfg file, but it is
+better to hash it in case someone steals our USB stick.
 
-```bash
-$ openssl passwd -salt 'U<v$+~4u' 'correct-horse-battery-staple'
-Hash: $1$U<v$+~4u$PiFombcarot0B92vnIQnT/
-```
-
-The salt can be any random 8-character string. You don't need to write it down,
+We can use any hashing algorithm supported by **/etc/shadow** file.
+I used SHA-512. The salt can be any random 16-character string. You don't need to write it down,
 it will become a part of hash itself.
 The second string is the actual password we will use.
+
+```bash
+$ openssl passwd -6 -salt '4G*jdj*YDIJ 23d' 'correct-horse-battery-staple'
+$6$4G*jdj*YDIJ 23d$gayXuxqZTVf/lBH2dq1e8D7ztjZiGph/P5IZPxCiUJfaOGJfbWjqZcpDc5NWghUTA8xE0bPV4FIbUTahREy9V0
+```
 
 ### Generating SSH keys
 
