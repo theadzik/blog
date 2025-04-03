@@ -137,13 +137,13 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKk7j5NrdCVSvPiDBoqUM/VC5ltpWjXRqEgCyjptugmp
    a high priority question. We should also add the preseed/file location so we don't need to
    manually type it in. The root of the USB stick is available to the installer under /cdrom/ path.
 
-```txt title="/mnt/data/boot/grub/grub.cfg"
-    menuentry --hotkey=a '... Automated install' { # This is the menu item we will pick during installation
-        set background_color=black
-        linux    /install.amd/vmlinuz auto=true priority=high preseed/file=/cdrom/preseed.cfg vga=788 --- quiet # edit this line
-        initrd   /install.amd/initrd.gz
-    }
-```
+   ```txt title="/mnt/data/boot/grub/grub.cfg"
+       menuentry --hotkey=a '... Automated install' { # This is the menu item we will pick during installation
+           set background_color=black
+           linux    /install.amd/vmlinuz auto=true priority=high preseed/file=/cdrom/preseed.cfg vga=788 --- quiet
+           initrd   /install.amd/initrd.gz
+       }
+   ```
 
 6. When we are done we need to unmount the drive.
    ```bash
@@ -151,9 +151,6 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKk7j5NrdCVSvPiDBoqUM/VC5ltpWjXRqEgCyjptugmp
    ```
 
 ## Node preparation
-
-Since I do not have a NAS yet, I don't have PXE server either,
-so installing OS is a semi-manual process.
 
 ### BIOS settings
 
