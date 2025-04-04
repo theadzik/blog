@@ -15,11 +15,11 @@ Here's how I prepare new nodes to be added to my cluster using Debian Preseeding
 
 ## Introduction
 
-Currently, I have a 2-node k3s cluster. One node runs on Raspberry Pi 5 8GB,
+Currently, I have a 2-node k3s cluster. One node runs on RaspberryPi 5 8GB,
 and the other one is a GMKTec G3 Plus mini-pic with an Intel N150 CPU.
 
 I decided to homogenize my cluster and buy two more GMKTec G3 Plus minis to replace
-the Raspberry&nbsp;Pi. Luckily I use ansible and ArgoCD to manage my cluster, so adding new nodes
+the RaspberryPi. Luckily I use ansible and ArgoCD to manage my cluster, so adding new nodes
 is a breeze.
 
 This will be the first post of a three part series where I'll walk through the process of installing Debian on
