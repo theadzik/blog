@@ -9,7 +9,7 @@ toc_max_heading_level: 3
 
 You are probably familiar with the concept of Infrastructure as Code (IaC).
 I want my cluster to be created in a repeatable and predictable way.
-Today I'll talk about how I prepare new nodes to be added to my cluster using Debian Preseeding.
+Here's how I prepare new nodes to be added to my cluster using Debian Preseeding.
 
 <!-- truncate -->
 
@@ -34,35 +34,37 @@ using a USB stick. I also want the setup to be repeatable and fast, so I'll use
 [Debian Preseeding](https://wiki.debian.org/DebianInstaller/Preseed) option to
 automate the installation as much as possible.
 
-In the future I will experiment with [Talos Linux](https://www.talos.dev/), but for now I want to
+In the future I'll experiment with [Talos Linux](https://www.talos.dev/), but for now I’d like to
 keep it simple and use Debian.
 
 ## Creating preseed.cfg
 
-I will start with creating a **preseed.cfg** file. It will provide answers to
-questions asked during the installation process. I want to make my **preseed.cfg**
-reusable for all of my servers in the future, so I will manually provide hostname
+I'll start with creating a **preseed.cfg** file. It will provide answers to
+questions asked during the installation process. I’d like to make my **preseed.cfg**
+reusable for all of my servers in the future, so I'll manually provide hostname
 and IP address.
 
 ### Generating password hash for my user
 
-First I will generate a password hash that I will use to log in to my account.
-We can put our password in plain text to the preseed.cfg file, but it is
+First, I'll generate a password hash that I'll use to log in to my account.
+You can put our password in plain text to the preseed.cfg file, but it is
 better to hash it in case someone steals our USB stick.
 
-We can use any hashing algorithm supported by **/etc/shadow** file.
+You can use any hashing algorithm supported by **/etc/shadow** file.
 I used SHA-512. The salt can be any random 16-character string. You don't need to write it down,
 it will become a part of hash itself.
 The second string is the actual password we will use.
 
 ```bash
-$ openssl passwd -6 -salt '4G*jdj*YDIJ 23d' 'correct-horse-battery-staple'
-$6$4G*jdj*YDIJ 23d$gayXuxqZTVf/lBH2dq1e8D7ztjZiGph/P5IZPxCiUJfaOGJfbWjqZcpDc5NWghUTA8xE0bPV4FIbUTahREy9V0
+$ openssl passwd -6 -salt '4JxutxWgeoBgd8oM' 'correct-horse-battery-staple'
+$6$4JxutxWgeoBgd8oM$Nu6lKZb4jhtF.mNHCdafEL8IVgoRILLaLVuhr.QlF27j4CZKurZ5ADAT0pFCOGJc1TUf4azPy6k/hT/vZtj3c0
 ```
+
+🦍🦍🦍
 
 ### Generating SSH keys
 
-I will only use password
+I'll only use password
 for sudo access but will log in to the server with ssh keys.
 
 :::note
@@ -81,7 +83,7 @@ $ ssh-keygen -t ed25519 -C "adam@zmuda.pro"
   It's a comment to help you identify what the key is used for. I usually put my
   email address there because I use same keys for multiple purposes.
 
-Note down the ***public*** key. As the name suggests it is public. You can share it freely with anyone.
+Make a note of the ***public*** key. As the name suggests it is public. You can share it freely with anyone.
 
 ```bash
 $ cat ~/.ssh/id_ed25519.pub
@@ -90,7 +92,7 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKk7j5NrdCVSvPiDBoqUM/VC5ltpWjXRqEgCyjptugmp
 
 ### Generating preseed.cfg
 
-Now I have everything I need to create a **preseed.cfg** file.
+Now I’m ready to create a **preseed.cfg** file.
 I started with the [Debian Preseed Example](https://www.debian.org/releases/stable/example-preseed.txt) as a base.
 I answered all the questions I could and left the rest. My plan was to just use the file and see what other questions
 do I get.
@@ -195,9 +197,9 @@ in-target /bin/sh -c "echo 'deb http://deb.debian.org/debian/ bookworm-updates m
 in-target /bin/sh -c "echo 'deb-src http://deb.debian.org/debian/ bookworm-updates main non-free-firmware\n' >> /etc/apt/sources.list";
 ```
 
-The last section is a **late_command**. It runs after the installation is finished. You can do
+This last section is a **late_command**. It runs after the installation is finished. You can do
 whatever you want there. I used it to add my public ssh key to the `~/.ssh/authorized_keys` file
-and add the apt sources to the `/etc/apt/sources.list` file.
+and add the apt sources to the `/etc/apt/sources.list` file. Just remember to prefix each command with `in-target`.
 
 ## Creating a writable installation USB stick
 
@@ -209,16 +211,16 @@ and add the apt sources to the `/etc/apt/sources.list` file.
    ```
    ![usb device](usb-device.webp)
 
-3. I will prepare [WritableUSBStick](https://wiki.debian.org/DebianInstaller/WritableUSBStick),
+3. I'll prepare [WritableUSBStick](https://wiki.debian.org/DebianInstaller/WritableUSBStick),
    so I can add my preseed.cfg file to it.
 
-   1. First I'll create two directories I will use to mount my
+   1. I'll create two directories I'll use to mount my
       USB stick and the **.iso** file I downloaded.
       ```bash
       $ mkdir /mnt/cdrom
       $ mkdir /mnt/data
       ```
-   2. Then I will format the stick and mount it
+   2. Then I'll format the stick and mount it
       ```bash
       $ parted --script /dev/sda mklabel msdos
       $ parted --script /dev/sda mkpart primary fat32 0% 100%
@@ -244,7 +246,7 @@ and add the apt sources to the `/etc/apt/sources.list` file.
    $ cp /path/to/preseed.cfg /mnt/data/preseed.cfg
    ```
 
-5. Because I want to provide a hostname during installation I need to change
+5. Because I’d like to provide a hostname during installation I need to change
    the question priority. Normally the installer only asks critical level questions, but the hostname is
    a high priority question. We should also add the **preseed/file** location so we don't need to
    manually type it in. The root of the USB stick is available to the installer under **/cdrom/** path.
@@ -275,12 +277,12 @@ Because GMKTec G3 Plus doesn't have a sticker with MAC address on it, I also wri
 
 ### Setting up static IP
 
-Last thing is to reserve a static IP address for each node. I have a TP-Link router and I can do it in the web interface:
+Lastly, I'd like to reserve an IP address for each node. I have a TP-Link router and I can do it in the web interface:
 ![dhcp settings](dhcp.webp)
 
 ### Installing OS
 
-After all of that is done, I plug the USB stick into the server and boot from it.
+Once that's done, I plug the USB stick into the server and boot from it.
 
 First I select **Advanced options**
 
@@ -290,7 +292,7 @@ Then I select **Automated install**
 
 ![automated install](automated_install.webp)
 
-It will ask you for the hostname and IP address.
+It'll ask you for the hostname and IP address.
 
 ![hostname](hostname.webp)
 
@@ -301,8 +303,8 @@ and plug it into the next server. I repeat the process for all of my servers.
 
 ## Final thoughts
 
-It takes a while to create a preseed.cfg file. I had to iterate over it a few times to get it right.
+It takes some time to create a preseed.cfg file. I needed to iterate over it a few times to get it right.
 But now I can install a new server in about 5 minutes.
 
-The next step is configuring ansible to install k3s and other required dependencies on all new server.
-I will talk about it in the next part of this series.
+Next, configuring ansible to install k3s and other required dependencies on all new server.
+I'll talk about it in the next part of this series.
