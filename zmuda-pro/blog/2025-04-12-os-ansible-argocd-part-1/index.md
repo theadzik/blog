@@ -1,6 +1,6 @@
 ---
 slug: os-ansible-argocd-part-1
-title: How I prepare new nodes for my k3s cluster.
+title: Adding new nodes to my k3s cluster in under 10 minutes using Debian Preseeding, Ansible and ArgoCD - Part 1
 authors: adzik
 tags: [debian]
 toc_min_heading_level: 2
@@ -8,8 +8,8 @@ toc_max_heading_level: 3
 ---
 
 You are probably familiar with the concept of Infrastructure as Code (IaC).
-You want your cluster to be created in a repeatable and predictable way.
-Today I'll show you how I prepare new nodes to be added to my cluster.
+I want my cluster to be created in a repeatable and predictable way.
+Today I'll talk about how I prepare new nodes to be added to my cluster using Debian Preseeding.
 
 <!-- truncate -->
 
@@ -19,11 +19,11 @@ Currently, I have a 2-node k3s cluster. One node runs on Raspberry Pi 5 8GB,
 and the other one is a GMKTec G3 Plus mini-pic with an Intel N150 CPU.
 
 I decided to homogenize my cluster and buy two more GMKTec G3 Plus minis to replace
-the Raspberry Pi. Luckily I use ansible and ArgoCD to manage my cluster, so adding new nodes
+the Raspberry&nbsp;Pi. Luckily I use ansible and ArgoCD to manage my cluster, so adding new nodes
 is a breeze.
 
-This will be a 3-part series where I'll walk through the process of preparing
-a new node, installing k3s using ansible, and deploying my workloads using ArgoCD.
+This will be the first post of a three part series where I'll walk through the process of installing Debian on
+a new node, hardening security and installing k3s using ansible, and deploying my workloads using ArgoCD.
 
 ## OS Selection
 
@@ -33,6 +33,9 @@ where I have cable connection)
 using a USB stick. I also want the setup to be repeatable and fast, so I'll use
 [Debian Preseeding](https://wiki.debian.org/DebianInstaller/Preseed) option to
 automate the installation as much as possible.
+
+In the future I will experiment with [Talos Linux](https://www.talos.dev/), but for now I want to
+keep it simple and use Debian.
 
 ## Creating preseed.cfg
 
@@ -87,6 +90,115 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKk7j5NrdCVSvPiDBoqUM/VC5ltpWjXRqEgCyjptugmp
 
 ### Generating preseed.cfg
 
+Now I have everything I need to create a **preseed.cfg** file.
+I started with the [Debian Preseed Example](https://www.debian.org/releases/stable/example-preseed.txt) as a base.
+I answered all the questions I could and left the rest. My plan was to just use the file and see what other questions
+do I get.
+When during installation a question popped up. I would find it in
+[this list](https://preseed.debian.net/debian-preseed/bookworm/amd64-main-full.txt) to translate a question
+to a preseed.cfg key I need to use.
+
+```txt title="preseed.cfg"
+#_preseed_V1
+### Localization
+d-i debian-installer/language string en
+d-i debian-installer/country string PL
+d-i debian-installer/locale string C.UTF-8
+d-i localechooser/supported-locales multiselect pl_PL.UTF-8
+d-i console-setup/codeset47 select guess
+
+# Keyboard selection.
+d-i keyboard-configuration/xkb-keymap select pl
+
+# Network configuration
+d-i netcfg/choose_interface select auto
+d-i netcfg/disable_autoconfig boolean true
+d-i netcfg/dhcp_options select Do not configure the network at this time
+d-i netcfg/get_gateway string 192.168.0.1
+d-i netcfg/get_netmask string 255.255.0.0
+d-i netcfg/get_nameservers string
+d-i netcfg/get_domain string internal
+
+d-i netcfg/wireless_wep string
+
+d-i mirror/country string manual
+d-i mirror/http/hostname string http.us.debian.org
+d-i mirror/http/directory string /debian
+d-i mirror/http/proxy string
+
+# Disable root login
+d-i passwd/root-login boolean false
+
+# Create my user
+d-i passwd/user-fullname string Adam Żmuda
+d-i passwd/username string adzik
+d-i passwd/user-password-crypted password $6$4G*jdj*YDIJ 23d$gayXuxqZTVf/lBH2dq1e8D7ztjZiGph/P5IZPxCiUJfaOGJfbWjqZcpDc5NWghUTA8xE0bPV4FIbUTahREy9V0
+
+# Set up time
+d-i clock-setup/utc boolean true
+d-i time/zone string Europe/Warsaw
+d-i clock-setup/ntp boolean false
+
+# Partitioning
+d-i partman-auto/disk string /dev/nvme0n1 # Automatically use whole SSD
+d-i partman-auto/method string lvm
+d-i partman-auto-lvm/guided_size string max
+
+d-i partman-lvm/device_remove_lvm boolean true
+d-i partman-md/device_remove_md boolean true
+d-i partman-lvm/confirm boolean true
+d-i partman-lvm/confirm_nooverwrite boolean true
+d-i partman-auto/choose_recipe select atomic
+
+d-i partman-partitioning/confirm_write_new_label boolean true
+d-i partman/choose_partition select finish
+d-i partman/confirm boolean true
+d-i partman/confirm_nooverwrite boolean true
+
+d-i partman-md/confirm boolean true
+d-i partman-partitioning/confirm_write_new_label boolean true
+d-i partman/choose_partition select finish
+d-i partman/confirm boolean true
+d-i partman/confirm_nooverwrite boolean true
+
+# Configure the package manager
+d-i apt-setup/cdrom/set-first boolean false
+d-i apt-setup/use_mirror boolean true
+d-i apt-setup/mirror/error select Ignore
+
+d-i popularity-contest/participate boolean false
+
+# Headless server configuration
+tasksel tasksel/first multiselect standard, ssh-server
+
+# Ignore other OS on the disk
+d-i grub-installer/only_debian boolean true
+d-i grub-installer/with_other_os boolean true
+
+# Shut down after installation
+d-i finish-install/reboot_in_progress note
+d-i debian-installer/exit/poweroff boolean true
+
+# Add ssh key for my user, and apt sources
+d-i preseed/late_command string \
+in-target export USERNAME=adzik; \
+in-target mkdir -p /home/$USERNAME/.ssh; \
+in-target /bin/sh -c "echo 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKk7j5NrdCVSvPiDBoqUM/VC5ltpWjXRqEgCyjptugmp adam@zmuda.pro' >> /home/$USERNAME/.ssh/authorized_keys"; \
+in-target chown -R $USERNAME:$USERNAME /home/$USERNAME/.ssh/; \
+in-target chmod 644 /home/$USERNAME/.ssh/authorized_keys; \
+in-target chmod 700 /home/$USERNAME/.ssh/; \
+in-target /bin/sh -c "echo 'deb http://deb.debian.org/debian/ bookworm main non-free-firmware\n' > /etc/apt/sources.list"; \
+in-target /bin/sh -c "echo 'deb-src http://deb.debian.org/debian/ bookworm main non-free-firmware\n\n' >> /etc/apt/sources.list"; \
+in-target /bin/sh -c "echo 'deb http://security.debian.org/debian-security bookworm-security main non-free-firmware\n' >> /etc/apt/sources.list"; \
+in-target /bin/sh -c "echo 'deb-src http://security.debian.org/debian-security bookworm-security main non-free-firmware\n\n' >> /etc/apt/sources.list"; \
+in-target /bin/sh -c "echo 'deb http://deb.debian.org/debian/ bookworm-updates main non-free-firmware\n' >> /etc/apt/sources.list"; \
+in-target /bin/sh -c "echo 'deb-src http://deb.debian.org/debian/ bookworm-updates main non-free-firmware\n' >> /etc/apt/sources.list";
+```
+
+The last section is a **late_command**. It runs after the installation is finished. You can do
+whatever you want there. I used it to add my public ssh key to the `~/.ssh/authorized_keys` file
+and add the apt sources to the `/etc/apt/sources.list` file.
+
 ## Creating a writable installation USB stick
 
 1. Download the DVD/USB `.iso` file from the
@@ -134,8 +246,8 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKk7j5NrdCVSvPiDBoqUM/VC5ltpWjXRqEgCyjptugmp
 
 5. Because I want to provide a hostname during installation I need to change
    the question priority. Normally the installer only asks critical level questions, but the hostname is
-   a high priority question. We should also add the preseed/file location so we don't need to
-   manually type it in. The root of the USB stick is available to the installer under /cdrom/ path.
+   a high priority question. We should also add the **preseed/file** location so we don't need to
+   manually type it in. The root of the USB stick is available to the installer under **/cdrom/** path.
 
    ```txt title="/mnt/data/boot/grub/grub.cfg"
        menuentry --hotkey=a '... Automated install' { # This is the menu item we will pick during installation
@@ -163,12 +275,34 @@ Because GMKTec G3 Plus doesn't have a sticker with MAC address on it, I also wri
 
 ### Setting up static IP
 
-Last thing is to set up a static IP address for each node. I have a TP-Link router and I can do it in the web interface:
+Last thing is to reserve a static IP address for each node. I have a TP-Link router and I can do it in the web interface:
 ![dhcp settings](dhcp.webp)
 
 ### Installing OS
 
-<!-- TODO: Add screenshots -->
+After all of that is done, I plug the USB stick into the server and boot from it.
 
-During the installation I create a user and add a public ssh key
-I generated on my laptop to the `~/.ssh/authorized_keys` file.
+First I select **Advanced options**
+
+![advanced options](advanced_options.webp)
+
+Then I select **Automated install**
+
+![automated install](automated_install.webp)
+
+It will ask you for the hostname and IP address.
+
+![hostname](hostname.webp)
+
+![ip address](ip_address.webp)
+
+And that's it! My server shuts down after the installation is finished. I take out the USB stick
+and plug it into the next server. I repeat the process for all of my servers.
+
+## Final thoughts
+
+It takes a while to create a preseed.cfg file. I had to iterate over it a few times to get it right.
+But now I can install a new server in about 5 minutes.
+
+The next step is configuring ansible to install k3s and other required dependencies on all new server.
+I will talk about it in the next part of this series.
