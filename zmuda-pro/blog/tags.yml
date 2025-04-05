@@ -33,3 +33,11 @@ argocd:
 synology:
   label: synology
   permalink: /synology
+
+debian:
+  label: debian
+  permalink: /debian
+
+iac:
+  label: iac
+  permalink: /iac
