@@ -1,6 +1,6 @@
 ---
 slug: os-ansible-argocd-part-1
-title: Adding new nodes to my k3s cluster in under 10 minutes using Debian Preseeding, Ansible and ArgoCD - Part 1
+title: Adding new nodes to my k3s cluster in under 10 minutes - Debian Preseeding
 authors: adzik
 tags: [debian, iac]
 toc_min_heading_level: 2
