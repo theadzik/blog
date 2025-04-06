@@ -41,3 +41,7 @@ debian:
 iac:
   label: iac
   permalink: /iac
+
+ansible:
+  label: ansible
+  permalink: /ansible
