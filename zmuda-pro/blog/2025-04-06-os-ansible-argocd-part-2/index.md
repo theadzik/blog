@@ -16,12 +16,12 @@ Of course, we want to automate this process. Ansible is my tool of choice for th
 ## Introduction
 
 [Ansible](https://docs.ansible.com/) is an automation tool that allows you to manage
-and configure systems. I use it for both my local environment and my servers.
-To use ansible you need to install it on your control machine. In my case, it's my laptop.
-Ansible only works on UNIX-like systems, so if you are using Windows, you need to use WSL or a VM.
+and configure systems. I'm using it for both my local environment and my servers.
+To use Ansible you have to install it on your control machine. In my case, it's my laptop.
+Ansible only works on UNIX-like systems. If you are using Windows, you have to use WSL or a VM.
 
-Ansible uses SSH to connect to the remote machines, so you need to have SSH access to the machines you want to manage.
-I added my SSH key to the new server in the previous post. So I'm ready to go.
+Ansible uses SSH to connect to the remote machines, you have to have SSH access to the machines you want to manage.
+I've added my SSH key to the new server in the previous post. So I'm ready to go.
 
 If you never used Ansible before,
 I recommend watching [Ansible 101](https://www.youtube.com/playlist?list=PL2_OBreMn7FqZkvMYt6ATmgC0KAGGJNAN)
@@ -46,16 +46,16 @@ This is it. Ansible is now installed and ready to use.
 
 ## Ansible
 
-Luckily, we do not need to write the whole playbook from scratch.
+Luckily, we don't have to write the whole playbook from scratch.
 [k3s-ansible](https://github.com/k3s-io/k3s-ansible) repository is a part of the official
 k3s project. It contains a set of roles that can be used to install and configure k3s.
 
-The repository is well documented, so I won't go into details here. I copied contents of the repo to my own
-so, I can modify it if needed. I also added some custom roles to the repository.
+The repository is well documented, so I won't go into details here. I copied contents of the repo to my own.
+I've also added some custom roles to the repository and edited existing ones.
 
 ## Inventory
 
-Ansible uses an inventory file to define the hosts that need to be managed.
+Ansible uses an inventory file to define the hosts that have to be managed.
 
 ```yaml title="inventory.yaml"
 all: # This is a group that contains all hosts
@@ -101,7 +101,7 @@ all: # This is a group that contains all hosts
 ```
 
 This is a simple inventory file that defines two groups: `server` and `agent`.
-I want my cluster to be highly available, so I chose to run 3 control plane nodes
+I want my cluster to be highly available. I chose to run 3 control plane nodes
 instead of 1 control plane and 2 worker nodes. 
 
 This setup has some drawbacks, but since I don't host any resource intensive workloads,
@@ -109,8 +109,8 @@ I don't mind having all nodes as control plane nodes.
 
 ## Playbook
 
-My playbook is based on the one from the repo mentioned earlier, but I added a few of my own roles and
-edited some of the existing ones. I also removed some of the roles that I don't need.
+My playbook is based on the one from the repo mentioned earlier, but I've added a few of my own roles and
+edited some of the existing ones. I've also removed some of the roles that I don't need.
 
 ```yaml title="playbook.yaml"
 ---
@@ -157,13 +157,13 @@ edited some of the existing ones. I also removed some of the roles that I don't 
 
 ## Updated roles
 
-I made a few changes to the roles that I use. You can check the full configuration
+I've made a few changes to the roles that I'm using. You can check the full configuration
 [here](https://github.com/theadzik/homelab/tree/8e412634ae828d4bbf205e4479d79f3a1726cd36/ansible). Below I'll
 highlight most important changes.
 
 ### Prereq
 
-This is a snippet from the `prereq` role. I added a few tasks to set kernel parameters and disable swap.
+This is a snippet from the `prereq` role. I've added a few tasks to set kernel parameters and disable swap.
 
 ```yaml title="roles/prereq/tasks/main.yaml"
 # I added that at the end.
@@ -194,7 +194,7 @@ This is a snippet from the `prereq` role. I added a few tasks to set kernel para
   notify: Reboot machine
 ```
 
-I added the below default variables to the roles:
+I've added the below default variables to the roles:
 
 ```yaml title="roles/prereq/defaults/main.yaml"
 prereq_packages:
@@ -216,7 +216,7 @@ kubelet_conf_dest: "/etc/sysctl.d/90-kubelet.conf"
 ### GPU drivers
 
 This role updates the kernel to the specified version. I only temporarily added backports to the apt sources list
-since I don't want to have them permanently enabled. I also added a task to update the initramfs and grub.
+since I don't want to have them permanently enabled. I've also added a task to update the initramfs and grub.
 
 ```yaml title="roles/gpu_drivers/tasks/main.yaml"
 - name: Check kernel version
@@ -301,7 +301,7 @@ local_data_permissions: 02774
 
 ## Running the playbook
 
-To run the playbook, you need to navigate to my **ansible** directory and run this command:
+To run the playbook, I have to navigate to my **ansible** directory and run this command:
 
 ```bash
 $ ansible-playbook playbooks/servers-setup.yaml --ask-become-pass
@@ -315,5 +315,5 @@ This will prompt you for the sudo password to the server.
 ## Conclusion
 
 In this post, I showed you how to use Ansible to automate the installation of k3s on a new server.
-I also showed you how to use Ansible to install GPU drivers and configure the system.
+I've also showed you how to use Ansible to install GPU drivers and configure the system.
 In the next post, I will show you how to use ArgoCD to manage your k3s cluster.
