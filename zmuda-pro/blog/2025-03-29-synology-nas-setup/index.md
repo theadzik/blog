@@ -51,6 +51,11 @@ and used the recommended Btrfs file system.
 
 ![Storage Pool](./storage-pool.webp)
 
+While I'm in the Storage Pool I also enable **SSD Cache**. Since I only have 1 SSD,
+I chose to use it as a read-only cache.
+
+![SSD Cache](./cache.webp)
+
 ### Running Drive Check
 
 I also wanted to make sure that my drives were not damaged in transport,
