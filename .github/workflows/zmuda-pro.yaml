@@ -28,10 +28,10 @@ jobs:
         run: |
           if [ ${{ github.event_name }} == "schedule" ]; then
             tag=$(git tag | tail -n 1)
-            echo "tag=$tag" >> $GITHUB_OUTPUT
           else
-            echo "tag=$(echo ${GITHUB_REF} | cut -d'/' -f3)" >> $GITHUB_OUTPUT
+            tag=$(echo ${GITHUB_REF} | cut -d'/' -f3)
           fi
+          echo "tag=$tag" >> $GITHUB_OUTPUT
           echo "TAG: $tag"
       - uses: actions/checkout@v4
         name: Checkout latest tag
