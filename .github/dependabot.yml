@@ -10,6 +10,10 @@ updates:
       - "/zmuda-pro"
     schedule:
       interval: "weekly"
+    groups:
+      npm:
+        patterns:
+          - "*"
   - package-ecosystem: "docker"
     directories:
       - "/"
