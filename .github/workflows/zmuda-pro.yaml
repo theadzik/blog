@@ -10,6 +10,7 @@ on:
     paths:
       - "zmuda-pro/**"
       - "Dockerfile"
+      - ".github/workflows/zmuda-pro.yaml"
 jobs:
   zmuda-pro-blog-build:
     runs-on: ubuntu-latest
