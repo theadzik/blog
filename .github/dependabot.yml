@@ -29,6 +29,6 @@ updates:
     schedule:
       interval: "weekly"
     groups:
-      docker:
+      actions:
         patterns:
           - "*"

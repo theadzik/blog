@@ -2,64 +2,39 @@ name: zmuda-pro-blog-build
 on:
   push:
     tags:
-      - "*"
-  schedule:
-    - cron: "33 5 * * 6"
+      - "[0-9]+.[0-9]+.[0-9]+"
   workflow_dispatch:
   pull_request:
+    branches:
+      - "main"
     paths:
       - "zmuda-pro/**"
       - "Dockerfile"
       - ".github/workflows/zmuda-pro.yaml"
 jobs:
-  zmuda-pro-blog-build:
-    runs-on: ubuntu-latest
+  build:
     permissions:
       contents: read
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        if: ${{ github.event_name == 'schedule' }}
-        with:
-          fetch-depth: 0
-          fetch-tags: true
-      - name: Get image tag
-        if: github.event_name != 'pull_request'
-        id: vars
-        run: |
-          if [ ${{ github.event_name }} == "schedule" ]; then
-            tag=$(git tag | tail -n 1)
-          else
-            tag=$(echo ${GITHUB_REF} | cut -d'/' -f3)
-          fi
-          echo "tag=$tag" >> $GITHUB_OUTPUT
-          echo "TAG: $tag"
-      - uses: actions/checkout@v4
-        name: Checkout latest tag
-        if: ${{ github.event_name == 'schedule' }}
-        with:
-          ref: ${{steps.vars.outputs.tag }}
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Login to Docker Hub
-        if: github.event_name != 'pull_request'
+        if: ${{ startsWith(github.ref, 'refs/tags/')  }}
         uses: docker/login-action@v3
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Only Build
-        if: github.event_name == 'pull_request'
+        if: ${{ ! startsWith(github.ref, 'refs/tags/')  }}
         uses: docker/build-push-action@v6
         with:
           platforms: "linux/amd64"
-          context: "{{defaultContext}}"
           push: false
       - name: Build and Push
-        if: github.event_name != 'pull_request'
+        if: ${{ startsWith(github.ref, 'refs/tags/')  }}
         uses: docker/build-push-action@v6
         with:
           platforms: "linux/amd64"
-          context: "{{defaultContext}}"
           push: true
-          tags: ${{ vars.DOCKERHUB_USERNAME }}/zmuda-pro-blog:${{steps.vars.outputs.tag }},${{ vars.DOCKERHUB_USERNAME }}/zmuda-pro-blog:latest
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/zmuda-pro-blog:${{ github.ref_name }},${{ vars.DOCKERHUB_USERNAME }}/zmuda-pro-blog:latest
