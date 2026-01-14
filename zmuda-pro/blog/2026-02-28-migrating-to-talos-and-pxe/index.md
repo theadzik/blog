@@ -103,9 +103,10 @@ Now it's time to test if PXE works. I had an unused laptop lying around so I con
 **disk first** and then from network. It may sound counter-intuitive, but it's a recommendation from
 [Talos docs](https://docs.siderolabs.com/talos/v1.12/platform-specific-installations/bare-metal-platforms/pxe):
 
-> If there is already a Talos installation on the disk, the machine will boot into that
+:::note
+If there is already a Talos installation on the disk, the machine will boot into that
 installation when booting from network. The boot order should prefer disk over network.
-
+:::
 
 I wiped the disk, connected the laptop to my LAN via Ethernet, and powered it on.
 
@@ -116,7 +117,7 @@ Success! The laptop booted into Talos Maintenance Mode.
 ## Creating Talos configs
 
 The rest of the process is configuring Talos and Kubernetes cluster.
-[Getting started guide](https://docs.siderolabs.com/talos/v1.12/getting-started/getting-started) has all the steps needed,
+[Getting started guide][getting-started] has all the steps needed,
 so I will just summarize them here.
 
 1. Install **talosctl** `brew install talos-systems/tap/talosctl`
@@ -164,17 +165,21 @@ so I will just summarize them here.
 
 ## Future improvements
 
-Now that I have a working Talos PXE boot setup I want to improve it further.
-First, I want to automate Talos config apply by using kernel argument `talos.config=https://some-service/talos/config?mac=${mac}`
-and exposing an API to serve configs based on MAC addresses.
-This will allow new nodes to simply boot and automatically join the cluster as a worker or control-plane node,
-based on their MAC addresses.
-Second, I want to configure the cluster properly instead of using the default values. I want to replace flannel
-with something supporting network policies.
+With PXE booting in place, I plan a couple of improvements:
+
+- Automate Talos configuration delivery by using the kernel argument
+  `talos.config=https://some-service/talos/config?mac=${mac}` and exposing a small API that
+  returns configuration files. New machines can then boot and automatically join the
+  cluster as worker or control-plane nodes based on their MAC address.
+- Replace Flannel with a CNI plugin that supports NetworkPolicies (for example, Calico or Cilium)
+  to enable fine-grained network security and isolation.
 
 ## Links to documentation
 
 - [Synology TFTP](https://kb.synology.com/en-global/DSM/help/DSM/AdminCenter/file_ftp_tftp)
-- [Talos PXE Boot](https://docs.siderolabs.com/talos/v1.12/platform-specific-installations/bare-metal-platforms/pxe)
+- [Talos PXE Boot][talos-pxe]
 - [talosctl](https://docs.siderolabs.com/talos/v1.12/getting-started/talosctl)
 - [nut-client extension config](https://github.com/siderolabs/extensions/tree/main/power/nut-client)
+
+[talos-pxe]: https://docs.siderolabs.com/talos/v1.12/platform-specific-installations/bare-metal-platforms/pxe
+[getting-started]: https://docs.siderolabs.com/talos/v1.12/getting-started/getting-started
