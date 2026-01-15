@@ -1,6 +1,6 @@
 ---
-slug: migrating-to-talos-and-pxe
-title: Migrating from k3s to Talos Linux and PXE
+slug: talos-linux-using-pxe
+title: PXE Booting Talos Linux from Synology NAS
 authors: adzik
 tags: [kubernetes, talos, synology, networking]
 toc_min_heading_level: 2
@@ -8,9 +8,9 @@ toc_max_heading_level: 3
 ---
 
 I decided I no longer wanted to run my homelab on Debian.
-It was working fine, I had no problems at all... and maybe that was the problem.
+It was working fine, but creating images and configuring OS was getting tedious.
 I wanted to try something new, get out of my comfort zone and learn new things.
-I had heard of Talos and PXE but never actually configured them myself.
+I had heard of Talos and PXE but never actually configured them myself. Time to change that.
 
 <!-- truncate -->
 
@@ -26,8 +26,8 @@ It sounded like a good alternative to Debian + k3s. Combining Talos with PXE boo
 
 ## Creating Talos PXE boot images
 
-I started by creating a Talos image using [https://factory.talos.dev](https://factory.talos.dev). It's a simple step-by-step
-image creator. I selected options that match my hardware:
+I started by creating a Talos image using [https://factory.talos.dev](https://factory.talos.dev).
+It's a simple step-by-step image creator. I selected options that match my hardware:
 
 - Bare-metal Machine
 - The newest Talos version (v1.12.1 at the time of writing)
@@ -163,16 +163,12 @@ so I will just summarize them here.
    talosctl kubeconfig --nodes $CONTROL_PLANE_IP --talosconfig=./talosconfig
    ```
 
-## Future improvements
+## Workload migration
 
-With PXE booting in place, I plan a couple of improvements:
-
-- Automate Talos configuration delivery by using the kernel argument
-  `talos.config=https://some-service/talos/config?mac=${mac}` and exposing a small API that
-  returns configuration files. New machines can then boot and automatically join the
-  cluster as worker or control-plane nodes based on their MAC address.
-- Replace Flannel with a CNI plugin that supports NetworkPolicies (for example, Calico or Cilium)
-  to enable fine-grained network security and isolation.
+Next steps are to move workloads from k3s to Talos cluster.
+I will use Velero to create backup and restore `PersistentVolumes` and `PersistentVolumeClaims`
+for anything that needs to persist data.
+Then I will bootstrap ArgoCD and let it create the rest of the resources.
 
 ## Links to documentation
 
