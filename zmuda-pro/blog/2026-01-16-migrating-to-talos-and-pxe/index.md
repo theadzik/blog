@@ -127,20 +127,13 @@ The rest of the process is configuring Talos and Kubernetes cluster.
 so I will just summarize them here.
 
 1. Install **talosctl** `brew install talos-systems/tap/talosctl`
-2. Generate Talos config files:
+2. Create a patch file to customize installation. I added UPS settings and the installer image:
 
-   ```bash
-   export CONTROL_PLANE_IP=192.168.0.2
-   export CLUSTER_NAME=homelab-dev
-   export DISK_NAME=nvme0n1
-
-   talosctl gen config $CLUSTER_NAME https://$CONTROL_PLANE_IP:6443 --install-disk /dev/$DISK_NAME
-   ```
-
-3. Edit configuration in `controlplane.yaml` and `worker.yaml` files.
-   I only added nut-client configuration to the bottom:
-
-   ```yaml
+   ```yaml title="patch-all.yaml"
+   machine:
+     install:
+       disk: /dev/nvme0n1
+       image: factory.talos.dev/installer/87286864e94c7d661c926a524c8e57f84d608488f0cd654a92b1e5f37d48b868:v1.12.1
    ---
    apiVersion: v1alpha1
    kind: ExtensionServiceConfig
@@ -149,10 +142,19 @@ so I will just summarize them here.
      - content: |-
          MONITOR ups@192.168.0.6 1 monuser secret secondary
          SHUTDOWNCMD "/sbin/poweroff"
-   mountPath: /usr/local/etc/nut/upsmon.conf
+       mountPath: /usr/local/etc/nut/upsmon.conf
    ```
 
    Yes, the secret to my UPS is "secret". Don't judge me.
+
+3. Generate Talos config files:
+
+   ```bash
+   export CONTROL_PLANE_IP=192.168.0.2
+   export CLUSTER_NAME=homelab-dev
+
+   talosctl gen config $CLUSTER_NAME https://$CONTROL_PLANE_IP:6443 --config-patch @patch-all.yaml
+   ```
 
 4. Apply config, set endpoints:
 
