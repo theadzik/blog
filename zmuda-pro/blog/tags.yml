@@ -45,3 +45,11 @@ iac:
 ansible:
   label: ansible
   permalink: /ansible
+
+talos:
+  label: talos
+  permalink: /talos
+
+networking:
+  label: networking
+  permalink: /networking
