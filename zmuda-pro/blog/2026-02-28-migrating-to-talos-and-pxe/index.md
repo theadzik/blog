@@ -35,29 +35,35 @@ It's a simple step-by-step image creator. I selected options that match my hardw
 - SecureBoot disabled
 - System Extensions:
   - `siderolabs/i915` for Intel graphics
-  - `siderolabs/iscsi-tools` for iSCSI storage
   - `siderolabs/nut-client` for UPS support
+  - `siderolabs/btrfs`
+  - `siderolabs/iscsi-tools`
+  - `siderolabs/util-linux-tools`
 - No extra kernel commands
 - Bootloader: auto
 
 As a result, I got a schematic and its ID:
 
-```yaml
-# ca3fbb9c3bb73ff71b7629ef5b487c827b93878609f361b0e1e555342378b595
+```yaml title="schematic.yaml"
+# 87286864e94c7d661c926a524c8e57f84d608488f0cd654a92b1e5f37d48b868
 customization:
   systemExtensions:
     officialExtensions:
       - siderolabs/i915
-      - siderolabs/iscsi-tools
       - siderolabs/nut-client
+      # https://github.com/siderolabs/talos/issues/11469#issuecomment-3679454197
+      - siderolabs/btrfs
+      - siderolabs/iscsi-tools
+      - siderolabs/util-linux-tools
 ```
 
 The final page provides links to download several images, but I only needed the Unified Kernel
 Image (UKI) for PXE. In the future I won't need to use the web interface: I can save the
 schematic ID and fetch the updated image directly:
 
-```text
-https://factory.talos.dev/image/<id>/<version>/metal-amd64-uki.efi
+```bash
+VERSION=1.12.1
+wget https://factory.talos.dev/image/$(curl -X POST --data-binary @schematic.yaml https://factory.talos.dev/schematics | jq -r '.id')/$VERSION/metal-amd64-uki.efi
 ```
 
 ## Synology setup
@@ -166,9 +172,11 @@ so I will just summarize them here.
 ## Workload migration
 
 Next steps are to move workloads from k3s to Talos cluster.
-I will use Velero to create backup and restore `PersistentVolumes` and `PersistentVolumeClaims`
-for anything that needs to persist data.
-Then I will bootstrap ArgoCD and let it create the rest of the resources.
+First, I need to make sure Synology CSI works on Talos.
+This [GitHub issue](https://github.com/siderolabs/talos/issues/11469#issuecomment-3679454197) nicely describes
+what needs to be done. The rest of the migration is restoring PV/PVC with Velero and reapplying
+manifests with ArgoCD. At least that's the theory. I'm sure I will need to fix lots of things along the way.
+I might write another blog post about it.
 
 ## Links to documentation
 
