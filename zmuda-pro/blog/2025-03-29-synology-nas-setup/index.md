@@ -24,7 +24,7 @@ I decided to use Synology because of their Synology Hybrid Raid (SHR).
 It allows you to seamlessly add more disks and create storage pools on drives with different sizes.
 They also provide Kubernetes CSI drivers, which was crucial for me.
 
-![Synology DS923+](./nas.webp)
+![Synology DS923+](/img/2025-03-29-nas.webp)
 
 ### Reserving IP Addresses
 
@@ -34,14 +34,14 @@ The DS923+ has 2 network adapters, so I reserved two IP addresses.
 I named the first one **nas-1-1** and the second one will stay blank,
 until I connect it to the router.
 
-![Router IP reservation](./dhcp.webp)
+![Router IP reservation](/img/2025-03-29-dhcp.webp)
 
 ### Connecting to the NAS
 
 After starting the NAS, I opened [https://finds.synology.com](https://finds.synology.com)
 on my laptop and connected to the NAS.
 
-![Finds Synology](./finds.webp)
+![Finds Synology](/img/2025-03-29-finds.webp)
 
 ### Initial Setup
 
@@ -49,12 +49,12 @@ Going through the wizard was quick and easy.
 I chose both of my disks, set the RAID type to SHR with 1 disk fault tolerance,
 and used the recommended Btrfs file system.
 
-![Storage Pool](./storage-pool.webp)
+![Storage Pool](/img/2025-03-29-storage-pool.webp)
 
 While I'm in the Storage Pool I also enable **SSD Cache**. Since I only have 1 SSD,
 I chose to use it as a read-only cache.
 
-![SSD Cache](./cache.webp)
+![SSD Cache](/img/2025-03-29-cache.webp)
 
 ### Running Drive Check
 
@@ -62,7 +62,7 @@ I also wanted to make sure that my drives were not damaged in transport,
 so I chose to run the drive check. It will take about 13 hours.
 I will come back to check the results later.
 
-![Drive Check](./drive-check.webp)
+![Drive Check](/img/2025-03-29-drive-check.webp)
 
 ### Creating a User for the CSI Driver
 
@@ -71,7 +71,7 @@ To do that, I opened the **User & Group** section under **Control Panel**.
 I named the user **kubernetes** so it's clear what it does.
 The account needs to be an administrator, so a strong password is a must.
 
-![Kubernetes User](./kubernetes-user.webp)
+![Kubernetes User](/img/2025-03-29-kubernetes-user.webp)
 
 ## Installing CSI Driver for Kubernetes
 
@@ -230,7 +230,7 @@ so I had to rename the file in the **secretGenerator** section.
 
 I pushed the changes to my repository and waited for ArgoCD to deploy the driver.
 
-![ArgoCD](./argocd.webp)
+![ArgoCD](/img/2025-03-29-argocd.webp)
 
 ## Testing
 
@@ -261,7 +261,7 @@ test   Bound    pvc-0f0fcd10-c81e-43c7-a325-600f970c2508   2Gi        RWX       
 
 Looks like everything is working, but let's check Synology to make sure the volume was created.
 
-![Synology LUN](./synology-lun.webp)
+![Synology LUN](/img/2025-03-29-synology-lun.webp)
 
 Success! The volume was created and is ready to be used.
 

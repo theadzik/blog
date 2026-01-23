@@ -76,11 +76,11 @@ NAS to run a DHCP server. If your router supports PXE booting, you can skip the 
 The first step is to assign a static IP to Synology so it doesn't need to assign one to itself. It can be done
 in **Control Panel** -> **Network** -> **Network Interface** -> **Edit**:
 
-![static ip](static-ip.webp)
+![static ip](/img/2026-01-16-static-ip.webp)
 
 Then I installed the **DHCP Server** package from the **Package Center**.
 
-![DHCP Server package](package-center.webp)
+![DHCP Server package](/img/2026-01-16-package-center.webp)
 
 I opened the **DHCP Server** app -> **Network Interface** -> Select **LAN 1** -> **Edit**
 and copied the network settings and client reservations (MACs and IPs) from my router.
@@ -93,7 +93,7 @@ Next step was to enable TFTP server on Synology. To do that I created a shared f
 and uploaded the `metal-amd64-uki.efi` file there. Then I went to **Control Panel** -> **File Services** -> **Advanced** tab
 and enabled TFTP service, setting the root directory to `/volume1/pxe`:
 
-![TFTP settings](tftp-settings.webp)
+![TFTP settings](/img/2026-01-16-tftp-settings.webp)
 
 ### PXE
 
@@ -101,7 +101,7 @@ Finally, I configured PXE. In the **DHCP Server** app -> **PXE** tab
 I enabled PXE service,
 selected Local TFTP server and set the bootloader to `metal-amd64-uki.efi`.
 
-![PXE settings](pxe-settings.webp)
+![PXE settings](/img/2026-01-16-pxe-settings.webp)
 
 ## Testing PXE boot
 
@@ -116,7 +116,7 @@ installation when booting from network. The boot order should prefer disk over n
 
 I wiped the disk, connected the laptop to my LAN via Ethernet, and powered it on.
 
-![Laptop Talos Maintenance Mode](laptop-maintenance.webp)
+![Laptop Talos Maintenance Mode](/img/2026-01-16-laptop-maintenance.webp)
 
 Success! The laptop booted into Talos Maintenance Mode.
 

@@ -310,7 +310,7 @@ BECOME password:
 
 This will prompt you for the sudo password to the server.
 
-![Ansible playbook](./ansible.webp)
+![Ansible playbook](/img/2025-04-06-ansible.webp)
 
 ## Conclusion
 
