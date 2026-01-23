@@ -72,12 +72,12 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       // Replace with your project's social card
-      image: 'img/PPBN.jpg',
+      image: 'img/PPBN.webp',
       navbar: {
         title: 'zmuda.pro',
         logo: {
           alt: 'zmuda.pro Logo',
-          src: 'img/PPBN.jpg',
+          src: 'img/PPBN.webp',
         },
         items: [
           {to: '/', label: 'Blog', position: 'left'},
