@@ -70,7 +70,7 @@ all: # This is a group that contains all hosts
         agent:
           hosts: # and 0 worker nodes
       # Those are variables that will be used during the playbook execution
-      vars: 
+      vars:
         ansible_port: 22
         k3s_version: v1.32.2+k3s1
         api_endpoint: "{{ hostvars[groups['server'][0]]['ansible_host'] | default(groups['server'][0]) }}"
@@ -102,7 +102,7 @@ all: # This is a group that contains all hosts
 
 This is a simple inventory file that defines two groups: `server` and `agent`.
 I want my cluster to be highly available. I chose to run 3 control plane nodes
-instead of 1 control plane and 2 worker nodes. 
+instead of 1 control plane and 2 worker nodes.
 
 This setup has some drawbacks, but since I don't host any resource intensive workloads,
 I don't mind having all nodes as control plane nodes.
