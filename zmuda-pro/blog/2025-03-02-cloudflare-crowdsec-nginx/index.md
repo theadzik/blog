@@ -22,7 +22,7 @@ Finally, I set up [cert-manager](https://cert-manager.io/), and my website was l
 Even though I knew that any public IP address or website would be scanned for vulnerabilities,
 seeing my ingress logs made me uneasy.
 
-![ingress logs](logs.webp)
+![ingress logs](/img/2025-03-02-logs.webp)
 
 A screen full of log entries, all arriving within a second. None of these requests were legitimate.
 It became clear that my cluster was constantly being probed for weaknesses.
@@ -41,7 +41,7 @@ First, we need to delete DNS entries pointing to our public IP.
 Then, we can set a Public Hostname in the Cloudflare dashboard (which will recreate the DNS entry).
 I used the following settings:
 
-![Cloudflare](cloudflare.webp)
+![Cloudflare](/img/2025-03-02-cloudflare.webp)
 
 - **Subdomain**: Left empty
 - **Domain**: `zmuda.pro`
@@ -189,7 +189,7 @@ To simplify maintenance, I created a separate `crowdsec-values.yaml` file and pa
 
 After deploying everything, you can check your [CrowdSec alerts](https://app.crowdsec.net/alerts).
 
-![CrowdSec](crowdsec.webp)
+![CrowdSec](/img/2025-03-02-crowdsec.webp)
 
 It looks like it's working!
 

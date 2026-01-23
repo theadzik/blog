@@ -4,14 +4,14 @@
 // There are various equivalent ways to declare your Docusaurus config.
 // See: https://docusaurus.io/docs/api/docusaurus-config
 
-import {themes as prismThemes} from 'prism-react-renderer';
+import { themes as prismThemes } from 'prism-react-renderer';
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'zmuda.pro',
-  // tagline: 'My journey through technology',
+  tagline: 'Playing with my home lab and coding stuff',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
@@ -50,16 +50,20 @@ const config = {
           sidebarPath: './sidebars.js',
         },
         blog: {
+          blogDescription: 'DevOps and infrastructure blog covering Kubernetes, k3s clustering, Talos Linux, PXE booting, Ansible automation, ArgoCD, Cloudflare Tunnels, CrowdSec security, NGINX, Synology NAS, and home lab setup.',
+          blogSidebarCount: 'ALL',
+          blogSidebarTitle: 'All posts',
           routeBasePath: '/', // Serve the blog at the site's root
           showReadingTime: true,
           feedOptions: {
-            type: ['rss', 'atom'],
+            type: 'all',
             xslt: true,
           },
           // Useful options to enforce blogging best practices
           onInlineTags: 'warn',
           onInlineAuthors: 'warn',
           onUntruncatedBlogPosts: 'warn',
+          showLastUpdateTime: true,
         },
         theme: {
           customCss: './src/css/custom.css',
@@ -72,15 +76,15 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       // Replace with your project's social card
-      image: 'img/PPBN.jpg',
+      image: 'img/PPBN.webp',
       navbar: {
         title: 'zmuda.pro',
         logo: {
           alt: 'zmuda.pro Logo',
-          src: 'img/PPBN.jpg',
+          src: 'img/PPBN.webp',
         },
         items: [
-          {to: '/', label: 'Blog', position: 'left'},
+          { to: '/', label: 'Blog', position: 'left' },
           {
             to: '/aboutme',
             position: 'left',

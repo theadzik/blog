@@ -209,7 +209,7 @@ and add the apt sources to the `/etc/apt/sources.list` file. Just remember to pr
    ```bash
    $ fdisk -l
    ```
-   ![usb device](usb-device.webp)
+   ![usb device](/img/2025-04-05-usb-device.webp)
 
 3. I'll prepare [WritableUSBStick](https://wiki.debian.org/DebianInstaller/WritableUSBStick),
    so I can add my preseed.cfg file to it.
@@ -270,7 +270,7 @@ and add the apt sources to the `/etc/apt/sources.list` file. Just remember to pr
 
 Before I start installing OS on my nodes, I make sure that the server
 automatically boots after power loss. I do it in the BIOS settings:
-![bios settings wake on power](bios.webp)
+![bios settings wake on power](/img/2025-04-05-bios.webp)
 > Wake on Power is a feature that allows the server to automatically power on after a power loss.
 
 Because GMKTec G3 Plus doesn't have a sticker with MAC address on it, I also write it down from the BIOS settings.
@@ -278,7 +278,7 @@ Because GMKTec G3 Plus doesn't have a sticker with MAC address on it, I also wri
 ### Setting up static IP
 
 Lastly, I'd like to reserve an IP address for each node. I have a TP-Link router and I can do it in the web interface:
-![dhcp settings](dhcp.webp)
+![dhcp settings](/img/2025-04-05-dhcp.webp)
 
 ### Installing OS
 
@@ -286,17 +286,17 @@ Once that's done, I plug the USB stick into the server and boot from it.
 
 First I select **Advanced options**
 
-![advanced options](advanced_options.webp)
+![advanced options](/img/2025-04-05-advanced_options.webp)
 
 Then I select **Automated install**
 
-![automated install](automated_install.webp)
+![automated install](/img/2025-04-05-automated_install.webp)
 
 It'll ask you for the hostname and IP address.
 
-![hostname](hostname.webp)
+![hostname](/img/2025-04-05-hostname.webp)
 
-![ip address](ip_address.webp)
+![ip address](/img/2025-04-05-ip_address.webp)
 
 And that's it! My server shuts down after the installation is finished. I take out the USB stick
 and plug it into the next server. I repeat the process for all of my servers.
