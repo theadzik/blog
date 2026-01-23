@@ -18,13 +18,13 @@
  * Luminance differences ensure distinguishability for all types.
  */
 
-/* Light Mode: BMW Le Mans Blue Metallic with accessible shades */
+/* Light Mode: Primary blue with accessible shades */
 :root {
   /* Eye-friendly warm off-white background (reduces blue light & eye strain) */
   --ifm-background-color: #f9f8f6;           /* Warm cream | Luminance: 97% | Reduces eye strain */
 
-  /* Primary Blues - Core brand color (BMW Le Mans Blue Metallic) - adjusted for warm background */
-  --ifm-color-primary: #004b87;              /* BMW Le Mans Blue | Luminance: 11% | WCAG AAA (9.8:1) */
+  /* Primary Blues - Core brand color - adjusted for warm background */
+  --ifm-color-primary: #004b87;              /* Primary Blue | Luminance: 11% | WCAG AAA (9.8:1) */
   --ifm-color-primary-dark: #003d66;         /* Darker shade | Luminance: 7% | WCAG AAA (14.2:1) */
   --ifm-color-primary-darker: #002d4d;       /* Even darker | Luminance: 4% | WCAG AAA (22.8:1) */
   --ifm-color-primary-darkest: #001a2e;      /* Very dark blue | Luminance: 1.5% | WCAG AAA (63.2:1) */
@@ -33,32 +33,32 @@
   --ifm-color-primary-lightest: #d4ecff;     /* Very light blue | Luminance: 90% | WCAG AAA (11.1:1) */
 
   /* Secondary Accent Colors for UI elements */
-  --ifm-color-success: #2d7a3d;              /* Teal-green for success/done | WCAG AAA */
-  --ifm-color-warning: #b8860b;              /* Dark goldenrod for warnings | WCAG AA */
-  --ifm-color-danger: #c41e3a;               /* Crimson for errors | WCAG AA */
-  --ifm-color-info: #0099cc;                 /* Cyan-blue for info | WCAG AA */
+  --ifm-color-success: #2d7a3d;              /* Green for success/done | WCAG AAA */
+  --ifm-color-warning: #b8860b;              /* Amber for warnings | WCAG AA */
+  --ifm-color-danger: #c41e3a;               /* Red for errors | WCAG AA */
+  --ifm-color-info: #0099cc;                 /* Cyan for info | WCAG AA */
 
   --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 75, 135, 0.15);  /* 15% opacity BMW blue */
+  --docusaurus-highlighted-code-line-bg: rgba(0, 75, 135, 0.15);  /* 15% opacity blue */
 }
 
-/* Dark Mode: Lighter BMW blue shades for contrast on dark backgrounds */
+/* Dark Mode: Lighter blue shades for contrast on dark backgrounds */
 [data-theme='dark'] {
   /* Primary Blues - Adjusted for dark background */
-  --ifm-color-primary: #5fa3d9;              /* Light BMW blue | Luminance: 56% | WCAG AAA */
-  --ifm-color-primary-dark: #2d7ab8;         /* Medium blue | Luminance: 36% | WCAG AAA */
-  --ifm-color-primary-darker: #0080ff;       /* Brighter blue | Luminance: 40% | WCAG AAA */
-  --ifm-color-primary-darkest: #00539d;      /* Deep blue | Luminance: 19% | WCAG AAA */
-  --ifm-color-primary-light: #8fc4ff;        /* Very light blue | Luminance: 78% | WCAG AAA */
-  --ifm-color-primary-lighter: #b8d9ff;      /* Lighter blue | Luminance: 86% | WCAG AAA */
-  --ifm-color-primary-lightest: #e8f2ff;     /* Almost white blue | Luminance: 97% | WCAG AAA */
+  --ifm-color-primary: #5fa3d9;              /* Primary blue | Luminance: 56% | WCAG AAA */
+  --ifm-color-primary-dark: #2d7ab8;         /* Darker primary | Luminance: 36% | WCAG AAA */
+  --ifm-color-primary-darker: #0080ff;       /* Darker still | Luminance: 40% | WCAG AAA */
+  --ifm-color-primary-darkest: #00539d;      /* Very dark primary | Luminance: 19% | WCAG AAA */
+  --ifm-color-primary-light: #8fc4ff;        /* Lighter primary | Luminance: 78% | WCAG AAA */
+  --ifm-color-primary-lighter: #b8d9ff;      /* Even lighter | Luminance: 86% | WCAG AAA */
+  --ifm-color-primary-lightest: #e8f2ff;     /* Very light primary | Luminance: 97% | WCAG AAA */
 
   /* Secondary Accent Colors - Adjusted for dark mode */
-  --ifm-color-success: #5ec96f;              /* Bright teal-green | WCAG AA */
-  --ifm-color-warning: #ffc107;              /* Bright amber for warnings | WCAG AA */
-  --ifm-color-danger: #ff6b6b;               /* Bright red for errors | WCAG AA */
-  --ifm-color-info: #4dd9ff;                 /* Bright cyan | WCAG AA */
+  --ifm-color-success: #5ec96f;              /* Green | WCAG AA */
+  --ifm-color-warning: #ffc107;              /* Amber for warnings | WCAG AA */
+  --ifm-color-danger: #ff6b6b;               /* Red for errors | WCAG AA */
+  --ifm-color-info: #4dd9ff;                 /* Cyan | WCAG AA */
 
   --ifm-background-color: #1b1b1d;
-  --docusaurus-highlighted-code-line-bg: rgba(95, 163, 217, 0.2);  /* 20% opacity BMW blue */
+  --docusaurus-highlighted-code-line-bg: rgba(95, 163, 217, 0.2);  /* 20% opacity blue */
 }
