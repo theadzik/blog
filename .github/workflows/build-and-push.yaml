@@ -11,7 +11,6 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: '25'
   REGISTRY_IMAGE: zmuda-pro-blog
 
 jobs:
@@ -30,7 +29,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version-file: '.node-version'
           cache: 'npm'
           cache-dependency-path: zmuda-pro/package-lock.json
       - name: Install dependencies
