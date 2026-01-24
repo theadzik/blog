@@ -120,6 +120,7 @@ jobs:
       - build-and-test
       - pre-commit
       - docker-build-test
+    permissions: {}
     if: always()
     steps:
       - name: Check status
