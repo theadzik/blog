@@ -86,13 +86,11 @@ Post structure:
 
 ### Pre-Commit Hooks
 Repo enforces via `.pre-commit-config.yaml`:
-- **JSON:** Auto-format (except `package*.json`)
-- **Markdown:** Lint with markdownlint
-- **YAML:** Lint with yamllint (excludes specific ansible/argocd files)
-- **Python:** isort + black (from other parts of repo)
-- **Docker:** hadolint
-- **Shell:** shellcheck
-- **Secrets:** detect-secrets with baseline at `.sec.baseline`
+- **JSON:** Auto-format and validation (except `package*.json`)
+- **YAML:** Lint with yamllint
+- **Markdown:** Lint with markdownlint (auto-fix enabled)
+- **Docker:** hadolint via Docker (best practices validation)
+- **General:** File hygiene (EOF, whitespace, merge conflicts, case conflicts, large files)
 
 Run locally: `pre-commit run --all-files`
 
