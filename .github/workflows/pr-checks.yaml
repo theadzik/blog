@@ -73,11 +73,6 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Setup Ruby (for markdownlint)
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.2'
-
       - name: Install pre-commit
         run: pip install pre-commit
 
