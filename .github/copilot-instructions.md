@@ -148,7 +148,7 @@ Run locally: `pre-commit run --all-files`
 ### Git Tagging Strategy
 - Date-based tags (`YYYY.M.D` format, e.g., `2026.1.23`) trigger Docker build+push
 - Format uses year.month.day with **no leading zeros** (e.g., `2026.1.5` not `2026.01.05`)
-- Non-tagged pushes trigger only workflow_dispatch (manual runs)
+- Non-tagged pushes do not trigger the release workflow; use workflow_dispatch for manual runs
 - PRs trigger quality checks workflow (build verification, security audit, linting)
 
 ### Environment Constraints
