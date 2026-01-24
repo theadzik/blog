@@ -33,7 +33,7 @@ jobs:
         run: npm ci
       - name: Run security audit
         working-directory: zmuda-pro
-        run: npm audit --audit-level=high
+        run: npm audit --audit-level=moderate
       - name: Build Docusaurus site
         working-directory: zmuda-pro
         run: npm run build
