@@ -1,12 +1,12 @@
 # Copilot Instructions for zmuda.pro Blog
 
 ## Project Overview
-This is a **Docusaurus 3.9.2 blog** deployed via containerized CI/CD. The site serves personal DevOps/infrastructure content at `https://zmuda.pro` with the blog as the root route and a separate `/aboutme` docs section. The entire site is containerized (Node.js builder → Nginx runtime) and published to DockerHub on date-based git tags (format: `YYYY.M.D` with no leading zeros, e.g., `2026.1.23`).
+This is a **Docusaurus 3.9.2 blog** deployed via containerized CI/CD. The site serves personal DevOps/infrastructure content at `https://zmuda.pro` with the blog as the root route and a separate `/aboutme` docs section. The build happens in CI (GitHub Actions), and the resulting static files are packaged into a single-stage Nginx runtime container published to DockerHub on date-based git tags (format: `YYYY.M.D` with no leading zeros, e.g., `2026.1.23`).
 
 **Key Tech Stack:**
 - Docusaurus 3.9.2 (React 19.2.3, MDX)
 - Node 18+ with `npm ci` for reproducibility
-- Docker multi-stage build (Node→Nginx)
+- Single-stage Nginx Docker image with pre-built artifacts
 - Markdown blog posts with YAML frontmatter
 
 ## Directory Structure & Purpose
@@ -28,10 +28,10 @@ zmuda-pro/                    # Main Docusaurus app
   └── sidebars.js             # Docs sidebar (currently empty, autodiscovery disabled)
 
 Root config files:
-  - Dockerfile               # Multi-stage: builds site, copies to Nginx
-  - default.conf            # Nginx server configuration
-  - .pre-commit-config.yaml # Local dev hooks (markdownlint, yamllint, hadolint, shellcheck, etc.)
-  - .github/workflows/zmuda-pro.yaml # Docker build & push on tags
+  - Dockerfile                        # Single-stage: copies pre-built site to Nginx
+  - default.conf                      # Nginx server configuration
+  - .pre-commit-config.yaml           # Local dev hooks (markdownlint, yamllint, hadolint, shellcheck, etc.)
+  - .github/workflows/build-and-push.yaml # Build site in CI, then build & push Docker image on tags
 ```
 
 ## Critical Developer Workflows
@@ -106,7 +106,7 @@ Run locally: `pre-commit run --all-files`
 
 ### Build Output
 - `npm run build` → `zmuda-pro/build/` directory (static HTML)
-- Dockerfile copies `build/` → Docker image → Nginx serves on port 8080 (unprivileged)
+- CI builds the site, then Dockerfile copies pre-built `build/` directory → Docker image → Nginx serves on port 8080 (unprivileged)
 - Nginx config: `default.conf` (custom routing if needed)
 
 ### Plugin & Theme Extensions
@@ -154,7 +154,7 @@ Run locally: `pre-commit run --all-files`
 ### Environment Constraints
 - Node 18+ required (`engines.node` in `package.json`)
 - npm ci required for reproducible installs
-- Docker multi-stage for production (no dev deps in runtime image)
+- Build happens in CI; Docker image is single-stage Nginx-only (no dev deps in runtime image)
 
 ## Modification Checklist
 When making changes:
