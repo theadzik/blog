@@ -59,8 +59,7 @@ With Cloudflare configured, it's time to install the client.
 
 ### Installing Cloudflared
 
-I found an example configuration
-[here](https://github.com/cloudflare/argo-tunnel-examples/blob/master/named-tunnel-k8s/cloudflared.yaml).
+I found an [example configuration from Cloudflare's argo-tunnel-examples repository](https://github.com/cloudflare/argo-tunnel-examples/blob/master/named-tunnel-k8s/cloudflared.yaml).
 
 I created my own ConfigMap, mirroring the public hostname settings from the previous step:
 

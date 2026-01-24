@@ -157,8 +157,7 @@ edited some of the existing ones. I've also removed some of the roles that I don
 
 ## Updated roles
 
-I've made a few changes to the roles that I'm using. You can check the full configuration
-[here](https://github.com/theadzik/homelab/tree/8e412634ae828d4bbf205e4479d79f3a1726cd36/ansible). Below I'll
+I've made a few changes to the roles that I'm using. You can check the [full configuration on GitHub](https://github.com/theadzik/homelab/tree/8e412634ae828d4bbf205e4479d79f3a1726cd36/ansible). Below I'll
 highlight most important changes.
 
 ### Prereq
