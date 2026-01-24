@@ -75,7 +75,7 @@ If you already have ssh keys generated you can simply get them from
 To generate a key pair I use **ssh-keygen**.
 
 ```bash
-$ ssh-keygen -t ed25519 -C "adam@zmuda.pro"
+ssh-keygen -t ed25519 -C "adam@zmuda.pro"
 ```
 
 * `-t ed25519` is an algorithm to use
@@ -206,9 +206,11 @@ and add the apt sources to the `/etc/apt/sources.list` file. Just remember to pr
 1. Download the DVD/USB `.iso` file from the
    [Downloading Debian](https://www.debian.org/CD/http-ftp/#stable) page.
 2. Connect a USB stick to your computer and check its device name:
+
    ```bash
-   $ fdisk -l
+   fdisk -l
    ```
+
    ![usb device](/img/2025-04-05-usb-device.webp)
 
 3. I'll prepare [WritableUSBStick](https://wiki.debian.org/DebianInstaller/WritableUSBStick),
@@ -216,16 +218,19 @@ and add the apt sources to the `/etc/apt/sources.list` file. Just remember to pr
 
    1. I'll create two directories I'll use to mount my
       USB stick and the **.iso** file I downloaded.
+
       ```bash
-      $ mkdir /mnt/cdrom
-      $ mkdir /mnt/data
+      mkdir /mnt/cdrom
+      mkdir /mnt/data
       ```
+
    2. Then I'll format the stick and mount it
+
       ```bash
-      $ parted --script /dev/sda mklabel msdos
-      $ parted --script /dev/sda mkpart primary fat32 0% 100%
-      $ mkfs.vfat /dev/sda1
-      $ mount /dev/sda1 /mnt/data
+      parted --script /dev/sda mklabel msdos
+      parted --script /dev/sda mkpart primary fat32 0% 100%
+      mkfs.vfat /dev/sda1
+      mount /dev/sda1 /mnt/data
       ```
 
       :::note
@@ -236,14 +241,15 @@ and add the apt sources to the `/etc/apt/sources.list` file. Just remember to pr
       to USB.
 
       ```bash
-      $ mount -o loop debian-12.4.0-amd64-netinst.iso /mnt/cdrom/
-      $ rsync -av /mnt/cdrom/ /mnt/data/
-      $ umount /mnt/cdrom
+      mount -o loop debian-12.4.0-amd64-netinst.iso /mnt/cdrom/
+      rsync -av /mnt/cdrom/ /mnt/data/
+      umount /mnt/cdrom
       ```
 
 4. Copy the preseed.cfg file to the root directory of USB
+
    ```bash
-   $ cp /path/to/preseed.cfg /mnt/data/preseed.cfg
+   cp /path/to/preseed.cfg /mnt/data/preseed.cfg
    ```
 
 5. Because I’d like to provide a hostname during installation I need to change
@@ -260,8 +266,9 @@ and add the apt sources to the `/etc/apt/sources.list` file. Just remember to pr
    ```
 
 6. When we are done we need to unmount the drive.
+
    ```bash
-   $ umount /mnt/data
+   umount /mnt/data
    ```
 
 ## Node preparation
