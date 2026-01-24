@@ -30,7 +30,7 @@ zmuda-pro/                    # Main Docusaurus app
 Root config files:
   - Dockerfile                        # Single-stage: copies pre-built site to Nginx
   - default.conf                      # Nginx server configuration
-  - .pre-commit-config.yaml           # Local dev hooks (markdownlint, yamllint, hadolint, shellcheck, etc.)
+  - .pre-commit-config.yaml           # Local development hooks (see file for configured checks)
   - .github/workflows/build-and-push.yaml # Build site in CI, then build & push Docker image on tags
 ```
 
