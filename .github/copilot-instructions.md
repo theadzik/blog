@@ -1,12 +1,12 @@
 # Copilot Instructions for zmuda.pro Blog
 
 ## Project Overview
-This is a **Docusaurus 3.9.2 blog** deployed via containerized CI/CD. The site serves personal DevOps/infrastructure content at `https://zmuda.pro` with the blog as the root route and a separate `/aboutme` docs section. The entire site is containerized (Node.js builder → Nginx runtime) and published to DockerHub on semver git tags.
+This is a **Docusaurus 3.9.2 blog** deployed via containerized CI/CD. The site serves personal DevOps/infrastructure content at `https://zmuda.pro` with the blog as the root route and a separate `/aboutme` docs section. The build happens in CI (GitHub Actions), and the resulting static files are packaged into a single-stage Nginx runtime container published to DockerHub on date-based git tags (format: `YYYY.M.D` with no leading zeros, e.g., `2026.1.23`).
 
 **Key Tech Stack:**
 - Docusaurus 3.9.2 (React 19.2.3, MDX)
 - Node 18+ with `npm ci` for reproducibility
-- Docker multi-stage build (Node→Nginx)
+- Single-stage Nginx Docker image with pre-built artifacts
 - Markdown blog posts with YAML frontmatter
 
 ## Directory Structure & Purpose
@@ -28,10 +28,10 @@ zmuda-pro/                    # Main Docusaurus app
   └── sidebars.js             # Docs sidebar (currently empty, autodiscovery disabled)
 
 Root config files:
-  - Dockerfile               # Multi-stage: builds site, copies to Nginx
-  - default.conf            # Nginx server configuration
-  - .pre-commit-config.yaml # Local dev hooks (markdownlint, yamllint, hadolint, shellcheck, etc.)
-  - .github/workflows/zmuda-pro.yaml # Docker build & push on tags
+  - Dockerfile                        # Single-stage: copies pre-built site to Nginx
+  - default.conf                      # Nginx server configuration
+  - .pre-commit-config.yaml           # Local development hooks (see file for configured checks)
+  - .github/workflows/build-and-push.yaml # Build site in CI, then build & push Docker image on tags
 ```
 
 ## Critical Developer Workflows
@@ -75,22 +75,22 @@ Post structure:
 4. Images: Store in `static/img/` as `.webp` format, reference as `/img/filename.webp`
 
 ### Deployment & Versioning
-- **Trigger:** Push a git tag matching semver (e.g., `v1.2.3`)
+- **Trigger:** Push a git tag matching date format `YYYY.M.D` (no leading zeros, e.g., `2026.1.23`)
 - **Pipeline:**
   1. Docker login (uses `DOCKERHUB_USERNAME` var + `DOCKERHUB_TOKEN` secret)
-  2. Build multi-stage Dockerfile
-  3. Push to DockerHub as `{USERNAME}/zmuda-pro-blog:{TAG}` and `:latest`
-- **PR builds:** Only build Docker image (no push) when PR modifies `zmuda-pro/**`, `Dockerfile`, or workflow file
+  2. Build Docusaurus site with npm
+  3. Build and push Docker image with pre-built artifacts
+  4. Push to DockerHub as `{USERNAME}/zmuda-pro-blog:{TAG}` and `:latest`
+  5. Generate SBOM and provenance attestation for supply chain security
+- **PR builds:** Run quality checks (build verification, security audit, pre-commit hooks, Docker test)
 
 ### Pre-Commit Hooks
 Repo enforces via `.pre-commit-config.yaml`:
-- **JSON:** Auto-format (except `package*.json`)
-- **Markdown:** Lint with markdownlint
-- **YAML:** Lint with yamllint (excludes specific ansible/argocd files)
-- **Python:** isort + black (from other parts of repo)
-- **Docker:** hadolint
-- **Shell:** shellcheck
-- **Secrets:** detect-secrets with baseline at `.sec.baseline`
+- **JSON:** Auto-format and validation (except `package*.json`)
+- **YAML:** Lint with yamllint
+- **Markdown:** Lint with markdownlint (auto-fix enabled)
+- **Docker:** hadolint via Docker (best practices validation)
+- **General:** File hygiene (EOF, whitespace, merge conflicts, case conflicts, large files)
 
 Run locally: `pre-commit run --all-files`
 
@@ -104,7 +104,7 @@ Run locally: `pre-commit run --all-files`
 
 ### Build Output
 - `npm run build` → `zmuda-pro/build/` directory (static HTML)
-- Dockerfile copies `build/` → Docker image → Nginx serves on port 8080 (unprivileged)
+- CI builds the site, then Dockerfile copies pre-built `build/` directory → Docker image → Nginx serves on port 8080 (unprivileged)
 - Nginx config: `default.conf` (custom routing if needed)
 
 ### Plugin & Theme Extensions
@@ -144,14 +144,15 @@ Run locally: `pre-commit run --all-files`
 - **Cloudflare Tunnels:** Article topic (not infra dependency, blog content only)
 
 ### Git Tagging Strategy
-- Semver tags (`v1.0.0`, `1.2.3`) trigger Docker build+push
-- Non-tagged pushes + PRs only build (don't push)
-- Useful for staged deployments or testing before publishing
+- Date-based tags (`YYYY.M.D` format, e.g., `2026.1.23`) trigger Docker build+push
+- Format uses year.month.day with **no leading zeros** (e.g., `2026.1.5` not `2026.01.05`)
+- Non-tagged pushes do not trigger the release workflow; use workflow_dispatch for manual runs
+- PRs trigger quality checks workflow (build verification, security audit, linting)
 
 ### Environment Constraints
 - Node 18+ required (`engines.node` in `package.json`)
 - npm ci required for reproducible installs
-- Docker multi-stage for production (no dev deps in runtime image)
+- Build happens in CI; Docker image is single-stage Nginx-only (no dev deps in runtime image)
 
 ## Modification Checklist
 When making changes:
@@ -161,4 +162,4 @@ When making changes:
 - [ ] Styling? Update `src/css/custom.css` (Docusaurus CSS var system)
 - [ ] Docs page? Add to `content/`, follow Markdown best practices
 - [ ] Build failures? Check `onBrokenLinks: 'throw'` — all internal links must resolve
-- [ ] Release? Create semver git tag; GitHub Actions builds and pushes to DockerHub
+- [ ] Release? Create date-based git tag (format: `YYYY.M.D`, e.g., `2026.1.23`); GitHub Actions builds and pushes to DockerHub
