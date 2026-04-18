@@ -35,6 +35,12 @@ jobs:
       - name: Install dependencies
         working-directory: zmuda-pro
         run: npm ci
+      - name: Run security audit
+        working-directory: zmuda-pro
+        run: |
+          if ! npm audit --audit-level=high; then
+            echo "::warning title=npm audit::Security audit reported high or higher vulnerabilities"
+          fi
       - name: Build Docusaurus site
         working-directory: zmuda-pro
         run: npm run build
