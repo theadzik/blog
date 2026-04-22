@@ -62,3 +62,31 @@
   --ifm-background-color: #1b1b1d;
   --docusaurus-highlighted-code-line-bg: rgba(95, 163, 217, 0.2);  /* 20% opacity blue */
 }
+
+@media print {
+  /* Keep grouped content together where possible when exporting to PDF. */
+  .pdf-keep {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Force a new PDF page before selected major sections. */
+  .pdf-page-break {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  /* Avoid orphaned section headers at the bottom of a page. */
+  h2,
+  h3,
+  h4 {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  p,
+  li {
+    orphans: 3;
+    widows: 3;
+  }
+}
