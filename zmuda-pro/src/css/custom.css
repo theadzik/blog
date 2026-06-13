@@ -100,8 +100,8 @@
 }
 
 .resume-avatar {
-  width: clamp(120px, 10vw, 200px);
-  height: clamp(120px, 10vw, 200px);
+  width: clamp(140px, 11vw, 230px);
+  height: clamp(140px, 11vw, 230px);
   border-radius: 50%;
   object-fit: cover;
 }
@@ -134,8 +134,8 @@
   }
 
   .resume-avatar {
-    width: clamp(110px, 34vw, 160px);
-    height: clamp(110px, 34vw, 160px);
+    width: clamp(125px, 28vw, 175px);
+    height: clamp(125px, 28vw, 175px);
   }
 
   .resume-title {
