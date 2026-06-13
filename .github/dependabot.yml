@@ -1,7 +1,7 @@
 version: 2
 
 registries:
-  dockerhub:
+  dhi:
     type: docker-registry
     url: https://dhi.io
     username: theadzik
@@ -45,6 +45,8 @@ updates:
 
   # Docker base images
   - package-ecosystem: "docker"
+    registries:
+      - "dhi"
     directory: "/"
     schedule:
       interval: "weekly"
