@@ -1,4 +1,12 @@
 version: 2
+
+registries:
+  dhi:
+    type: docker-registry
+    url: https://dhi.io
+    username: theadzik
+    password: ${{ secrets.DOCKERHUB_TOKEN }}
+
 updates:
   # Node.js dependencies for Docusaurus blog
   - package-ecosystem: "npm"
@@ -37,6 +45,8 @@ updates:
 
   # Docker base images
   - package-ecosystem: "docker"
+    registries:
+      - "dhi"
     directory: "/"
     schedule:
       interval: "weekly"
