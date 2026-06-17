@@ -9,7 +9,9 @@ on:
   workflow_dispatch:
 
 env:
-  REGISTRY_IMAGE: zmuda-pro-blog
+  REGISTRY: docker.io
+  REPOSITORY: ${{ vars.DOCKERHUB_USERNAME }}
+  IMAGE_NAME: zmuda-pro-blog
 
 jobs:
   build:
@@ -51,13 +53,14 @@ jobs:
       - name: Login to Docker Hub
         uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
         with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
+          registry: ${{ env.REGISTRY }}
+          username: ${{ env.REPOSITORY }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6.1.0
         with:
-          images: ${{ vars.DOCKERHUB_USERNAME }}/${{ env.REGISTRY_IMAGE }}
+          images: ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}
       - name: Build and Push
         id: build-push
         uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
@@ -76,7 +79,7 @@ jobs:
       - name: Generate artifact attestation
         uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
         with:
-          subject-name: ${{ vars.DOCKERHUB_USERNAME }}/${{ env.REGISTRY_IMAGE }}
+          subject-name: ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}
           subject-digest: ${{ steps.build-push.outputs.digest }}
           push-to-registry: true
 
@@ -87,4 +90,4 @@ jobs:
       - name: Keyless sign image
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
         run: |
-          cosign sign --yes ${{ vars.DOCKERHUB_USERNAME }}/${{ env.REGISTRY_IMAGE }}@${{ steps.build-push.outputs.digest }}
+          cosign sign --yes ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}@${{ steps.build-push.outputs.digest }}
