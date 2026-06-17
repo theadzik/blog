@@ -3,15 +3,6 @@ on:
   pull_request:
     branches:
       - "main"
-    paths:
-      - "zmuda-pro/**"
-      - "Dockerfile"
-      - ".github/workflows/**"
-      - "default.conf"
-      - ".pre-commit-config.yaml"
-      - ".hadolint.yaml"
-      - ".yamllint.yaml"
-      - ".dockerignore"
   workflow_dispatch:
 
 jobs:
