@@ -1,0 +1,57 @@
+name: Cut Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Compute next calendar version
+        id: version
+        run: |
+          YEAR=$(date +'%Y')
+          MONTH=$(date +'%-m')   # no leading zero
+          PREFIX="${YEAR}.${MONTH}."
+
+          # Find existing tags matching this year.month.*, extract the highest xx
+          LATEST=$(git tag -l "${PREFIX}*" | sed "s/^${PREFIX}//" | sort -n | tail -1)
+
+          if [ -z "$LATEST" ]; then
+            NEXT=1
+          else
+            NEXT=$((LATEST + 1))
+          fi
+
+          VERSION="${YEAR}.${MONTH}.${NEXT}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Computed version: $VERSION"
+
+      - name: Set up git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump package.json version
+        working-directory: zmuda-pro
+        run: npm version ${{ steps.version.outputs.version }} --no-git-tag-version
+
+      - name: Commit version bump
+        run: |
+          git add zmuda-pro/package.json zmuda-pro/package-lock.json
+          git commit -m "chore(release): ${{ steps.version.outputs.version }}"
+          git push origin main
+
+      - name: Create and push tag
+        run: |
+          git tag ${{ steps.version.outputs.version }}
+          git push origin ${{ steps.version.outputs.version }}
