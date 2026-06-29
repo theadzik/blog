@@ -73,7 +73,7 @@ jobs:
 
   docker-build-test:
     name: Docker Build Test
-    uses: ./.github/workflows/docker-build-test.yaml
+    uses: ./.github/workflows/build-and-push.yaml
     with:
       environment: 'development'
 
