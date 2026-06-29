@@ -81,6 +81,7 @@ jobs:
     uses: ./.github/workflows/build-and-push.yaml
     with:
       environment: 'development'
+    secrets: inherit
 
   summary:
     name: All Checks Passed
