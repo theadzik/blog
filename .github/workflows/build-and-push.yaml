@@ -71,16 +71,15 @@ jobs:
           annotations: ${{ steps.meta.outputs.annotations }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          #provenance: mode=max
-          #sbom: true
+          provenance: mode=max
+          sbom: true
 
-      - name: Generate SBOM
-        id: sbom
-        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
-        with:
-          image: ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}@${{ steps.build-push.outputs.digest }}
-          format: spdx-json
-          output-file: sbom.spdx.json
+      - name: Extract buildx-generated SBOM
+        id: sbom-extract
+        run: |
+          docker buildx imagetools inspect \
+            ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}@${{ steps.build-push.outputs.digest }} \
+            --format '{{ json .SBOM.SPDX }}' > sbom.spdx.json
 
       - name: Attest SBOM
         uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
@@ -88,11 +87,4 @@ jobs:
           subject-name: ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}
           subject-digest: ${{ steps.build-push.outputs.digest }}
           sbom-path: sbom.spdx.json
-          push-to-registry: true
-
-      - name: Attest Provenance
-        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
-        with:
-          subject-name: ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}
-          subject-digest: ${{ steps.build-push.outputs.digest }}
           push-to-registry: true
