@@ -10,11 +10,20 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+      - name: Generate GitHub App token
+        id: generate-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          permission-contents: write
+
       - name: Checkout main
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           ref: main
           fetch-depth: 0
+          token: ${{ steps.generate-token.outputs.token }}
 
       - name: Compute next calendar version
         id: version
@@ -39,7 +48,10 @@ jobs:
       - name: Set up git identity
         run: |
           git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.email "${{ vars.APP_CLIENT_ID }}+github-actions[bot]@users.noreply.github.com"
+          gh auth setup-git
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
 
       - name: Bump package.json version
         working-directory: zmuda-pro
