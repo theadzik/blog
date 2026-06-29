@@ -73,6 +73,11 @@ jobs:
 
   docker-build-test:
     name: Docker Build Test
+    permissions:
+      contents: read
+      artifact-metadata: write
+      attestations: write
+      id-token: write
     uses: ./.github/workflows/build-and-push.yaml
     with:
       environment: 'development'
