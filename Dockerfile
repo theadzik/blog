@@ -1,8 +1,10 @@
 # syntax=docker/dockerfile:1
 FROM dhi.io/node:26-alpine3.23-dev AS builder
 
-ENV NODE_ENV=production
+ARG NODE_ENV=development
+ENV NODE_ENV=${NODE_ENV}
 
+# Copy the entire git repo to the container to allow showLastUpdateTime on blog pages
 COPY . /blog
 WORKDIR /blog/zmuda-pro
 RUN npm ci --omit=dev && npm run build

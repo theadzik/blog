@@ -5,6 +5,12 @@ on:
       - "*"
   workflow_dispatch:
   workflow_call:
+    inputs:
+      environment:
+        description: 'Environment to build for'
+        required: true
+        type: string
+        default: 'development'
 
 env:
   REGISTRY: docker.io
@@ -72,6 +78,8 @@ jobs:
           cache-to: type=gha,mode=max
           provenance: mode=max
           sbom: true
+          build-args: |
+            NODE_ENV=${{ inputs.environment || 'production' }}
 
       - name: Extract buildx-generated SBOM
         id: sbom-extract
