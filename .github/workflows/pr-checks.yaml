@@ -81,6 +81,7 @@ jobs:
     uses: ./.github/workflows/build-and-push.yaml
     with:
       environment: 'development'
+      push: false
     secrets: inherit
 
   summary:
