@@ -1,0 +1,14 @@
+name: Tag Release Build
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  build-and-push:
+    uses: ./.github/workflows/build-and-push.yaml
+    with:
+      environment: production
+      push: true
+    secrets: inherit
