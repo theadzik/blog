@@ -27,7 +27,8 @@
     "@docusaurus/types": "^3.10.0"
   },
   "engines": {
-    "node": ">=18.0"
+    "node": ">=18.0",
+    "pnpm": ">=11.5"
   },
   "name": "zmuda-pro",
   "private": true,
