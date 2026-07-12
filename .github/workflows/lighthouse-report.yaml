@@ -39,6 +39,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build website
+        working-directory: blog
         run: pnpm build
 
       - name: Audit URLs using Lighthouse
