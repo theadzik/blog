@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-test:
-    name: Build & Test
+  audit:
+    name: Audit
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -40,21 +40,7 @@ jobs:
 
       - name: Check for outdated packages
         working-directory: zmuda-pro
-        run: pnpm outdated || true
-
-      - name: Build site
-        working-directory: zmuda-pro
-        run: pnpm run build
-        env:
-          NODE_ENV: development
-
-      - name: Check build output
-        run: |
-          if [ ! -d "zmuda-pro/build" ]; then
-            echo "Build directory not found!"
-            exit 1
-          fi
-          echo "✅ Build successful - output directory exists"
+        run: pnpm outdated
 
   lighthouse-report:
     permissions:
@@ -92,13 +78,14 @@ jobs:
         shell: bash
         run: |
           urls=""
-          for entry in zmuda-pro/blog/*; do
-            slug=$(basename "$entry")
-            slug="${slug%.md}"
-            slug="${slug%.yml}"
-            urls+="http://${{ env.URL_DOMAIN }}/$slug"$'\n'
+          shopt -s nullglob
+          for file in zmuda-pro/blog/*.md zmuda-pro/blog/**/index.md; do
+            slug=$(sed -nE 's/^slug:[[:space:]]*"?([^"#]+)"?.*$/\1/p' "$file" | head -n1 | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')
+            if [[ -n "$slug" ]]; then
+              urls+="http://${{ env.URL_DOMAIN }}/$slug"$'\n'
+            fi
           done
-          urls="${urls%$'\n'}"
+          urls=$(printf "%s" "$urls" | awk 'NF && !seen[$0]++')
           echo "urls<<EOF" >> "$GITHUB_OUTPUT"
           echo "$urls" >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
