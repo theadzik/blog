@@ -12,7 +12,7 @@ This is a **Docusaurus 3.9.2 blog** deployed via containerized CI/CD. The site s
 ## Directory Structure & Purpose
 
 ```
-blog/                         # Main Docusaurus app
+zmuda-pro/                    # Main Docusaurus app
   ├── blog/                   # Blog posts (served as /)
   │   ├── [DATE]-[SLUG]/      # Directory-based posts (e.g., 2025-03-02-cloudflare-crowdsec-nginx/)
   │   │   └── index.md        # Post content with YAML frontmatter
@@ -38,18 +38,18 @@ Root config files:
 
 ### Local Development
 ```bash
-cd blog
-pnpm install --frozen-lockfile  # Install deps (reproducible)
-pnpm start                      # Dev server on http://localhost:3000, hot-reload enabled
-pnpm run build                  # Compile to /build directory
-pnpm run serve                  # Serve built site locally
+cd zmuda-pro
+npm ci              # Install deps (reproducible)
+npm start           # Dev server on http://localhost:3000, hot-reload enabled
+npm run build       # Compile to /build directory
+npm run serve       # Serve built site locally
 ```
 
 ### Adding Blog Posts
 **Author writes posts; AI reviews for style, formatting, and grammar.**
 
 Post structure:
-1. Directory: `blog/blog/YYYY-MM-DD-slug/index.md`
+1. Directory: `zmuda-pro/blog/YYYY-MM-DD-slug/index.md`
 2. Frontmatter template:
    ```markdown
    ---
@@ -69,8 +69,8 @@ Post structure:
    ```
 3. Requirements:
    - `slug`: URL path identifier (must be unique, hyphen-separated)
-   - `authors` must exist in `blog/blog/authors.yml` (currently: `adzik`)
-   - `tags` must be defined in `blog/blog/tags.yml` with `label` and `permalink`
+   - `authors` must exist in `zmuda-pro/blog/authors.yml` (currently: `adzik`)
+   - `tags` must be defined in `zmuda-pro/blog/tags.yml` with `label` and `permalink`
    - Include `<!-- truncate -->` comment to mark where preview cuts off in listing
 4. Images: Store in `static/img/` as `.webp` format, reference as `/img/filename.webp`
 
@@ -97,13 +97,13 @@ Run locally: `pre-commit run --all-files`
 ## Architecture & Data Flows
 
 ### URL Routing
-- `/` → blog posts from `blog/blog/` (rendered newest first)
-- `/aboutme` → docs from `blog/content/` (via `routeBasePath: '/aboutme'`)
+- `/` → blog posts from `zmuda-pro/blog/` (rendered newest first)
+- `/aboutme` → docs from `zmuda-pro/content/` (via `routeBasePath: '/aboutme'`)
 - `/kubernetes`, `/security`, etc. → tag archive pages (permalinks defined in `tags.yml`)
 - Author pages auto-generated when `page: true` in `authors.yml`
 
 ### Build Output
-- `npm run build` → `blog/build/` directory (static HTML)
+- `npm run build` → `zmuda-pro/build/` directory (static HTML)
 - CI builds the site, then Dockerfile copies pre-built `build/` directory → Docker image → Nginx serves on port 8080 (unprivileged)
 - Nginx config: `default.conf` (custom routing if needed)
 
@@ -156,7 +156,7 @@ Run locally: `pre-commit run --all-files`
 
 ## Modification Checklist
 When making changes:
-- [ ] Blog post? Add to `blog/blog/`, update `authors.yml` or `tags.yml` if needed
+- [ ] Blog post? Add to `zmuda-pro/blog/`, update `authors.yml` or `tags.yml` if needed
 - [ ] Static assets? Place in `static/img/` (webp preferred), reference as `/img/...`
 - [ ] Config changes? Edit `docusaurus.config.js` (title, navbar, footer, plugins)
 - [ ] Styling? Update `src/css/custom.css` (Docusaurus CSS var system)
