@@ -1,0 +1,10 @@
+{
+  "ci": {
+    "collect": {
+      "numberOfRuns": 1,
+      "startServerCommand": "pnpm serve:website",
+      "startServerReadyPattern": "Serving",
+      "startServerReadyTimeout": 10000
+    }
+  }
+}
