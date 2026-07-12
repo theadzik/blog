@@ -4,6 +4,21 @@ on:
     tags:
       - "*"
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to build for'
+        required: true
+        type: string
+        default: 'development'
+      push:
+        description: 'Whether to push the image to the registry'
+        required: true
+        type: boolean
+        default: true
+      tags:
+        description: 'Additional tags to apply to the image'
+        required: false
+        type: string
   workflow_call:
     inputs:
       environment:
@@ -16,6 +31,10 @@ on:
         required: true
         type: boolean
         default: true
+      tags:
+        description: 'Additional tags to apply to the image'
+        required: false
+        type: string
 env:
   REGISTRY: docker.io
   REPOSITORY: ${{ vars.DOCKERHUB_USERNAME }}
