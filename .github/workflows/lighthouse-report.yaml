@@ -30,7 +30,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: lts/*
+          node-version: latest
           cache: pnpm
 
       - name: Install dependencies
@@ -39,7 +39,7 @@ jobs:
 
       - name: Build website fast
         working-directory: zmuda-pro
-        run: pnpm build:website:fast
+        run: pnpm build
 
       - name: Audit URLs using Lighthouse
         id: lighthouse_audit
