@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-test:
-    name: Build & Test
+  audit:
+    name: Audit
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -15,41 +15,113 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+        with:
+          package_json_file: zmuda-pro/package.json
+
       - name: Setup Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version-file: '.node-version'
-          cache: 'npm'
-          cache-dependency-path: zmuda-pro/package-lock.json
+          node-version: latest
+          cache: 'pnpm'
+          cache-dependency-path: zmuda-pro/pnpm-lock.yaml
 
       - name: Install dependencies
         working-directory: zmuda-pro
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Run security audit
         working-directory: zmuda-pro
         run: |
-          if ! npm audit --audit-level=high; then
-            echo "::warning title=npm audit::Security audit reported high or higher vulnerabilities"
+          if ! pnpm audit --audit-level=moderate; then
+            echo "::warning title=pnpm audit::Security audit reported moderate or higher vulnerabilities"
           fi
 
       - name: Check for outdated packages
         working-directory: zmuda-pro
-        run: npm outdated || true
+        run: pnpm outdated
 
-      - name: Build site
+  lighthouse-report:
+    permissions:
+      pull-requests: write # for marocchino/sticky-pull-request-comment
+    name: Lighthouse Report
+    runs-on: ubuntu-latest
+    env:
+      URL_DOMAIN: localhost:3000
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+        with:
+          package_json_file: zmuda-pro/package.json
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: latest
+          cache: 'pnpm'
+          cache-dependency-path: zmuda-pro/pnpm-lock.yaml
+
+      - name: Install dependencies
         working-directory: zmuda-pro
-        run: npm run build
-        env:
-          NODE_ENV: development
+        run: pnpm install --frozen-lockfile
 
-      - name: Check build output
+      - name: Build website
+        working-directory: zmuda-pro
+        run: pnpm build
+
+      - name: Generate URLs
+        id: urls
+        shell: bash
         run: |
-          if [ ! -d "zmuda-pro/build" ]; then
-            echo "Build directory not found!"
-            exit 1
-          fi
-          echo "✅ Build successful - output directory exists"
+          urls=""
+          shopt -s nullglob
+          for file in zmuda-pro/blog/*.md zmuda-pro/blog/**/index.md; do
+            slug=$(sed -nE 's/^slug:[[:space:]]*"?([^"#]+)"?.*$/\1/p' "$file" | head -n1 | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')
+            if [[ -n "$slug" ]]; then
+              urls+="http://${{ env.URL_DOMAIN }}/$slug"$'\n'
+            fi
+          done
+          urls=$(printf "%s" "$urls" | awk 'NF && !seen[$0]++')
+          echo "urls<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$urls" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Audit URLs using Lighthouse
+        id: lighthouse_audit
+        uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # 12.6.2
+        with:
+          urls: |
+            http://${{ env.URL_DOMAIN }}
+            http://${{ env.URL_DOMAIN }}/aboutme
+            ${{ steps.urls.outputs.urls }}
+          configPath: ./.github/workflows/lighthouserc.json
+          uploadArtifacts: false
+          temporaryPublicStorage: true
+
+      - name: Format lighthouse score
+        id: format_lighthouse_score
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # 9.0.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const results = ${{ steps.lighthouse_audit.outputs.manifest }}
+            const links = ${{ steps.lighthouse_audit.outputs.links }}
+            const createLighthouseReport = (await import(`${process.env.GITHUB_WORKSPACE}/.github/scripts/formatLighthouseReport.js`)).default;
+            const comment = createLighthouseReport({ results, links });
+            core.setOutput("comment", comment);
+
+      - name: Add Lighthouse stats as comment
+        id: comment_to_pr
+        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # 3.0.5
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          number: ${{ github.event.pull_request.number }}
+          header: lighthouse
+          message: ${{ steps.format_lighthouse_score.outputs.comment }}
 
   pre-commit:
     name: Pre-commit Checks
@@ -81,25 +153,5 @@ jobs:
     uses: ./.github/workflows/build-and-push.yaml
     with:
       environment: 'development'
-      push: false
+      push: true
     secrets: inherit
-
-  summary:
-    name: All Checks Passed
-    runs-on: ubuntu-latest
-    needs:
-      - build-and-test
-      - pre-commit
-      - docker-build-test
-    permissions: {}
-    if: always()
-    steps:
-      - name: Check status
-        run: |
-          if [[ "${{ needs.build-and-test.result }}" != "success" ]] || \
-             [[ "${{ needs.pre-commit.result }}" != "success" ]] || \
-             [[ "${{ needs.docker-build-test.result }}" != "success" ]]; then
-            echo "One or more checks failed!"
-            exit 1
-          fi
-          echo "✅ All required checks passed!"
