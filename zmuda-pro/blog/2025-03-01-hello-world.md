@@ -2,7 +2,6 @@
 slug: hello-world
 title: Hello, World!
 authors: adzik
-tags: [hello]
 ---
 
 Just saying hello :)

@@ -6,10 +6,6 @@ security:
   label: security
   permalink: /security
 
-hello:
-  label: hello
-  permalink: /hello
-
 nginx:
   label: nginx
   permalink: /nginx
