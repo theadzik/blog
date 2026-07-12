@@ -52,7 +52,7 @@ jobs:
             http://localhost:3000/talos-linux-using-pxe
             http://localhost:3000/tags
           configPath: ./.github/workflows/lighthouserc.json
-          uploadArtifacts: true
+          uploadArtifacts: false
           temporaryPublicStorage: true
 
       - name: Format lighthouse score
