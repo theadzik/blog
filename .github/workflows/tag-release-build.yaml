@@ -1,0 +1,19 @@
+name: Tag Release Build
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  build-and-push:
+    uses: ./.github/workflows/build-and-push.yaml
+    permissions:
+      contents: read
+      artifact-metadata: write
+      attestations: write
+      id-token: write
+    with:
+      environment: production
+      push: true
+    secrets: inherit

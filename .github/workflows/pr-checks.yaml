@@ -43,10 +43,10 @@ jobs:
         run: pnpm outdated
 
   lighthouse-report:
-    permissions:
-      pull-requests: write # for marocchino/sticky-pull-request-comment
     name: Lighthouse Report
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write # for marocchino/sticky-pull-request-comment
     env:
       URL_DOMAIN: localhost:3000
     steps:
@@ -144,7 +144,7 @@ jobs:
         run: pre-commit run --all-files --show-diff-on-failure
 
   docker-build-test:
-    name: Docker Build Test
+    name: Docker Build Push PR image
     permissions:
       contents: read
       artifact-metadata: write
