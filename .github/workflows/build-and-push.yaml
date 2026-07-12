@@ -16,7 +16,6 @@ on:
         required: true
         type: boolean
         default: true
-
 env:
   REGISTRY: docker.io
   REPOSITORY: ${{ vars.DOCKERHUB_USERNAME }}
@@ -58,7 +57,7 @@ jobs:
         with:
           context: .
           platforms: "linux/amd64"
-          push: ${{ inputs.push }}
+          push: ${{ inputs.push == 'true' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           annotations: ${{ steps.meta.outputs.annotations }}
@@ -70,7 +69,7 @@ jobs:
             NODE_ENV=${{ inputs.environment || 'production' }}
 
       - name: Extract buildx-generated SBOM
-        if: ${{ inputs.push }}
+        if: ${{ inputs.push == 'true' }}
         id: sbom-extract
         run: |
           docker buildx imagetools inspect \
@@ -79,7 +78,7 @@ jobs:
 
       - name: Attest SBOM
         uses: actions/attest@a1948c3f048ba23858d222213b7c278aabede763 # v4.1.1
-        if: ${{ inputs.push }}
+        if: ${{ inputs.push == 'true' }}
         with:
           subject-name: ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}
           subject-digest: ${{ steps.build-push.outputs.digest }}
@@ -88,7 +87,7 @@ jobs:
 
       - name: Attest Provenance
         uses: actions/attest@a1948c3f048ba23858d222213b7c278aabede763 # v4.1.1
-        if: ${{ inputs.push }}
+        if: ${{ inputs.push == 'true' }}
         with:
           subject-name: ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}
           subject-digest: ${{ steps.build-push.outputs.digest }}
