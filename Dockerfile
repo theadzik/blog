@@ -7,11 +7,11 @@ ENV CI=true
 
 # Copy the entire git repo to the container to allow showLastUpdateTime on blog pages
 COPY . /blog
-WORKDIR /blog/zmuda-pro
+WORKDIR /blog/blog
 # hadolint ignore=DL3016 # pnpm version specified in package.json
 RUN npm install -g pnpm && pnpm install --frozen-lockfile --prod && pnpm run build
 
 FROM dhi.io/nginx:1.31.2-alpine3.23 AS runtime
 
-COPY --from=builder /blog/zmuda-pro/build /usr/share/nginx/html
+COPY --from=builder /blog/blog/build /usr/share/nginx/html
 COPY default.conf /etc/nginx/conf.d/default.conf

@@ -27,14 +27,12 @@ jobs:
 
       - name: Install pnpm
         uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-        with:
-          package_json_file: zmuda-pro/package.json
 
       - name: Compute next calendar version
         id: version
         run: |
           YEAR=$(date +'%Y')
-          MONTH=$(date +'%-m')   # no leading zero
+          MONTH=$(date +'%-m')   # no leading zero``
           PREFIX="${YEAR}.${MONTH}."
 
           # Find existing tags matching this year.month.*, extract the highest xx
@@ -59,12 +57,12 @@ jobs:
           GH_TOKEN: ${{ steps.generate-token.outputs.token }}
 
       - name: Bump package.json version
-        working-directory: zmuda-pro
+        working-directory: blog
         run: pnpm version ${{ steps.version.outputs.version }} --no-git-tag-version
 
       - name: Commit version bump
         run: |
-          git add zmuda-pro/package.json zmuda-pro/pnpm-lock.yaml
+          git add blog/package.json blog/pnpm-lock.yaml
           git commit -m "chore(release): ${{ steps.version.outputs.version }}"
           git push origin main
 

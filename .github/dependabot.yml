@@ -10,7 +10,7 @@ registries:
 updates:
   # Node.js dependencies for Docusaurus blog
   - package-ecosystem: "npm"
-    directory: "/zmuda-pro"
+    directory: "/blog"
     schedule:
       interval: "weekly"
     cooldown:
