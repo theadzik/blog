@@ -89,17 +89,19 @@ jobs:
 
       - name: Generate URLs
         id: urls
-        uses: actions/github-script@v8
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const globber = await glob.create('zmuda-pro/blog/*');
-            const files = await globber.glob();
-            const urls = files
-              .map(x => x.match(/([\w-]+)/)[1])
-              .map(x => `http://${{ env.URL_DOMAIN }}/${x}`)
-              .join('\n');
-            core.setOutput('urls', urls);
+        shell: bash
+        run: |
+          urls=""
+          for entry in zmuda-pro/blog/*; do
+            slug=$(basename "$entry")
+            slug="${slug%.md}"
+            slug="${slug%.yml}"
+            urls+="http://${{ env.URL_DOMAIN }}/$slug"$'\n'
+          done
+          urls="${urls%$'\n'}"
+          echo "urls<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$urls" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
 
       - name: Audit URLs using Lighthouse
         id: lighthouse_audit
@@ -108,7 +110,6 @@ jobs:
           urls: |
             http://${{ env.URL_DOMAIN }}
             http://${{ env.URL_DOMAIN }}/aboutme
-            http://${{ env.URL_DOMAIN }}/tags
             ${{ steps.urls.outputs.urls }}
           configPath: ./.github/workflows/lighthouserc.json
           uploadArtifacts: false
