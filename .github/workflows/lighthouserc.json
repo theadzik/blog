@@ -1,10 +1,7 @@
 {
   "ci": {
     "collect": {
-      "numberOfRuns": 1,
-      "startServerCommand": "pnpm -C zmuda-pro serve",
-      "startServerReadyPattern": "Serving",
-      "startServerReadyTimeout": 10000
+      "numberOfRuns": 1
     }
   }
 }
