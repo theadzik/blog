@@ -93,7 +93,7 @@ jobs:
       IMAGE_NAME: zmuda-pro-blog
     services:
       web:
-        image: ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:pr-${{ github.event.pull_request.number }}
+        image: docker.io/theadzik/zmuda-pro-blog:pr-${{ github.event.pull_request.number }}
         options: >
           --health-cmd "wget --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1"
           --health-interval 2s
