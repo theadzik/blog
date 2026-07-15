@@ -94,12 +94,6 @@ jobs:
     services:
       web:
         image: docker.io/theadzik/zmuda-pro-blog:pr-${{ github.event.pull_request.number }}
-        options: >
-          --health-cmd "wget --no-verbose --tries=1 --spider http://localhost:8080/"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 20
-          --health-start-period 20s
         ports:
           - 8080:8080
     steps:
