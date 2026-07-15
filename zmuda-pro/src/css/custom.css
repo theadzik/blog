@@ -185,3 +185,9 @@ html[data-theme='dark'] .theme-code-block .token.doctype,
 html[data-theme='dark'] .theme-code-block .token.cdata {
   color: #aebee8 !important;
 }
+
+/* Ensure author social links have adequate tap target size and spacing. */
+[class*='authorSocials_'] {
+  display: flex;
+  column-gap: 0.375rem;
+}
