@@ -177,3 +177,11 @@ html[data-theme='light'] .theme-code-block .token.key,
 html[data-theme='light'] .theme-code-block .token.atrule {
   color: #005a9c !important;
 }
+
+/* Improve dark-theme code comment contrast (Dracula comments are too dim). */
+html[data-theme='dark'] .theme-code-block .token.comment,
+html[data-theme='dark'] .theme-code-block .token.prolog,
+html[data-theme='dark'] .theme-code-block .token.doctype,
+html[data-theme='dark'] .theme-code-block .token.cdata {
+  color: #aebee8 !important;
+}
