@@ -146,3 +146,21 @@
     justify-items: center;
   }
 }
+
+/* Keep inline links in text blocks distinguishable beyond color alone. */
+.markdown :where(p, li, td, th, blockquote) a {
+  text-decoration-line: underline;
+  text-decoration-thickness: 0.1em;
+  text-underline-offset: 0.16em;
+  text-decoration-skip-ink: auto;
+}
+
+.markdown :where(p, li, td, th, blockquote) a:hover,
+.markdown :where(p, li, td, th, blockquote) a:focus-visible {
+  text-decoration-thickness: 0.14em;
+}
+
+.markdown :where(p, li, td, th, blockquote) a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
