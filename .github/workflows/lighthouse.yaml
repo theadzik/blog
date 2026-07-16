@@ -25,7 +25,8 @@ jobs:
           for file in zmuda-pro/blog/*.md zmuda-pro/blog/**/index.md; do
             slug=$(sed -nE 's/^slug:[[:space:]]*"?([^"#]+)"?.*$/\1/p' "$file" | head -n1 | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')
             if [[ -n "$slug" ]]; then
-              urls+="https://${{ env.URL_DOMAIN }}/$slug"$'\n'
+              urls+="https://${{ env.URL_DOMAIN }}/$slug?docusaurus-theme=light"$'\n'
+              urls+="https://${{ env.URL_DOMAIN }}/$slug?docusaurus-theme=dark"$'\n'
             fi
           done
           urls=$(printf "%s" "$urls" | awk 'NF && !seen[$0]++')
@@ -38,8 +39,10 @@ jobs:
         uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # 12.6.2
         with:
           urls: |
-            https://${{ env.URL_DOMAIN }}
-            https://${{ env.URL_DOMAIN }}/aboutme
+            https://${{ env.URL_DOMAIN }}?docusaurus-theme=light
+            https://${{ env.URL_DOMAIN }}?docusaurus-theme=dark
+            https://${{ env.URL_DOMAIN }}/aboutme?docusaurus-theme=light
+            https://${{ env.URL_DOMAIN }}/aboutme?docusaurus-theme=dark
             ${{ steps.urls.outputs.urls }}
           configPath: ./.github/workflows/lighthouserc.json
           uploadArtifacts: false
@@ -59,4 +62,4 @@ jobs:
 
       - name: Add Lighthouse stats to summary
         run: |
-          echo "${{ steps.format_lighthouse_score.outputs.comment }}" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.format_lighthouse_score.outputs.comment }}" >> "$GITHUB_STEP_SUMMARY"

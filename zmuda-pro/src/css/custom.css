@@ -146,3 +146,57 @@
     justify-items: center;
   }
 }
+
+/* Keep inline links in text blocks distinguishable beyond color alone. */
+.markdown :where(p, li, td, th, blockquote) a {
+  text-decoration-line: underline;
+  text-decoration-thickness: 0.1em;
+  text-underline-offset: 0.16em;
+  text-decoration-skip-ink: auto;
+}
+
+.markdown :where(p, li, td, th, blockquote) a:hover,
+.markdown :where(p, li, td, th, blockquote) a:focus-visible {
+  text-decoration-thickness: 0.14em;
+}
+
+.markdown :where(p, li, td, th, blockquote) a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* Raise light-theme syntax token contrast to satisfy WCAG in code blocks. */
+html[data-theme='light'] .theme-code-block .token.comment,
+html[data-theme='light'] .theme-code-block .token.prolog,
+html[data-theme='light'] .theme-code-block .token.doctype,
+html[data-theme='light'] .theme-code-block .token.cdata {
+  color: #4b5563 !important;
+}
+
+html[data-theme='light'] .theme-code-block .token.key,
+html[data-theme='light'] .theme-code-block .token.atrule {
+  color: #005a9c !important;
+}
+
+html[data-theme='light'] .theme-code-block .token.string {
+  color: #9a1b5a !important;
+}
+
+html[data-theme='light'] .theme-code-block .token.boolean,
+html[data-theme='light'] .theme-code-block .token.number {
+  color: #006b68 !important;
+}
+
+/* Improve dark-theme code comment contrast (Dracula comments are too dim). */
+html[data-theme='dark'] .theme-code-block .token.comment,
+html[data-theme='dark'] .theme-code-block .token.prolog,
+html[data-theme='dark'] .theme-code-block .token.doctype,
+html[data-theme='dark'] .theme-code-block .token.cdata {
+  color: #aebee8 !important;
+}
+
+/* Ensure author social links have adequate tap target size and spacing. */
+[class*='authorSocials_'] {
+  display: flex;
+  column-gap: 0.375rem;
+}
