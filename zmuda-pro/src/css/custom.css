@@ -178,6 +178,15 @@ html[data-theme='light'] .theme-code-block .token.atrule {
   color: #005a9c !important;
 }
 
+html[data-theme='light'] .theme-code-block .token.string {
+  color: #9a1b5a !important;
+}
+
+html[data-theme='light'] .theme-code-block .token.boolean,
+html[data-theme='light'] .theme-code-block .token.number {
+  color: #006b68 !important;
+}
+
 /* Improve dark-theme code comment contrast (Dracula comments are too dim). */
 html[data-theme='dark'] .theme-code-block .token.comment,
 html[data-theme='dark'] .theme-code-block .token.prolog,
