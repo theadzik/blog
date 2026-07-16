@@ -40,8 +40,8 @@ jobs:
         with:
           urls: |
             https://${{ env.URL_DOMAIN }}?docusaurus-theme=light
-            https://${{ env.URL_DOMAIN }}/aboutme?docusaurus-theme=light
             https://${{ env.URL_DOMAIN }}?docusaurus-theme=dark
+            https://${{ env.URL_DOMAIN }}/aboutme?docusaurus-theme=light
             https://${{ env.URL_DOMAIN }}/aboutme?docusaurus-theme=dark
             ${{ steps.urls.outputs.urls }}
           configPath: ./.github/workflows/lighthouserc.json
