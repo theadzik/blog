@@ -1,14 +1,6 @@
-name: Lighthouse Report - ${{ inputs.url_domain }}
+name: Lighthouse Report - zmuda.pro
 on:
   workflow_dispatch:
-    inputs:
-      url_domain:
-        description: 'Domain to audit'
-        required: true
-        default: 'beta.zmuda.pro'
-        options:
-          - zmuda.pro
-          - beta.zmuda.pro
 
 concurrency:
   group: ${{ github.workflow }}
@@ -19,7 +11,7 @@ jobs:
     name: Lighthouse Report
     runs-on: ubuntu-latest
     env:
-      URL_DOMAIN: ${{ inputs.url_domain }}
+      URL_DOMAIN: zmuda.pro
     steps:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
