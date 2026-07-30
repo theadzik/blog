@@ -38,27 +38,22 @@ jobs:
         working-directory: zmuda-pro
         run: pnpm install --frozen-lockfile
 
-      # Critical fails the job; high and below warn.
+      # High and above fails the job; moderate and below warn.
       #
-      # The bar is at critical rather than high because the tree currently
-      # carries 5 high advisories, all transitive through @docusaurus/core's
-      # build toolchain (serialize-javascript, svgo, fast-uri, postcss,
-      # brace-expansion). None is directly fixable without Docusaurus bumping,
-      # and none reaches the runtime image, which ships static output behind
-      # nginx rather than node_modules. Blocking on high would therefore stop
-      # every pull request for something no change here can resolve.
-      #
-      # Phase 2 should triage those five - pnpm overrides or documented
-      # ignoreGhsas entries - and then lower this back to high.
+      # The bar sat at critical while five unfixable high advisories were in the
+      # tree. Three are now resolved by pinned overrides and two are explicitly
+      # accepted, with rationale and a re-review date, in
+      # zmuda-pro/pnpm-workspace.yaml. Suppressing two known advisories by ID is
+      # a far narrower exception than disabling the whole severity tier.
       - name: Run security audit
         working-directory: zmuda-pro
         run: |
-          if ! pnpm audit --audit-level=critical; then
-            echo "::error title=pnpm audit::Critical severity advisory found"
+          if ! pnpm audit --audit-level=high; then
+            echo "::error title=pnpm audit::High or critical severity advisory found"
             exit 1
           fi
           if ! pnpm audit --audit-level=moderate; then
-            echo "::warning title=pnpm audit::Moderate or higher severity advisory found"
+            echo "::warning title=pnpm audit::Moderate severity advisory found"
           fi
 
       # `pnpm outdated` exits non-zero whenever anything is outdated, which would
@@ -91,11 +86,13 @@ jobs:
       - name: Review dependency changes
         uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
         with:
-          # Matched to the pnpm audit bar above. A Docusaurus bump reshuffles the
-          # transitive tree, so at `high` this would flag the same 5 unactionable
-          # build-time advisories as newly introduced and block Dependabot.
-          # Raise to high in phase 2, once those are triaged.
-          fail-on-severity: critical
+          # Matched to the pnpm audit bar above.
+          fail-on-severity: high
+          # The same two advisories accepted in zmuda-pro/pnpm-workspace.yaml.
+          # Needed here as well: a Docusaurus bump reshuffles the transitive tree,
+          # and this action would otherwise report them as newly introduced and
+          # block Dependabot. Keep the two lists in step.
+          allow-ghsas: GHSA-5c6j-r48x-rmvq, GHSA-mh99-v99m-4gvg
           comment-summary-in-pr: on-failure
 
   pre-commit:

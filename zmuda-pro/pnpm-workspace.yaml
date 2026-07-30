@@ -1,2 +1,53 @@
 allowBuilds:
   core-js: false
+
+# Forces patched versions of transitive build-time dependencies that Docusaurus
+# resolves below the fix. All three are already inside the semver ranges its own
+# packages declare, so this moves the resolved version without widening a range.
+#
+# These live here rather than in package.json: current pnpm reads `overrides`
+# only from pnpm-workspace.yaml and silently ignores a `pnpm.overrides` block in
+# package.json.
+#
+# svgo      GHSA-2p49-hgcm-8545  removeScripts leaves some executable scripts in
+# fast-uri  GHSA-v2hh-gcrm-f6hx  host confusion via literal backslash
+# postcss   GHSA-r28c-9q8g-f849  path traversal in source map auto-loading
+#
+# Upper bounds are deliberate: a bare ">=3.3.4" let svgo resolve to 4.0.2 and
+# fast-uri to 4.1.1, silently forcing a major upgrade on a transitive dependency
+# whose parent was never tested against it. Pin to the patched version within the
+# major that Docusaurus already resolves.
+overrides:
+  svgo: ">=3.3.4 <4"
+  fast-uri: ">=3.1.4 <4"
+  postcss: ">=8.5.18 <9"
+
+# Accepted advisories, reviewed 2026-07-30, re-review by 2026-10-30.
+#
+# Both are transitive build-time dependencies of @docusaurus/core. Neither
+# reaches the runtime image, which ships the static output from `docusaurus
+# build` behind nginx and contains no node_modules. Neither can be fixed by an
+# override the way the three above were: each patched version is a major
+# release away from what Docusaurus resolves, so forcing it would upgrade a
+# transitive dependency its parent was never tested against - a larger risk than
+# the advisory itself.
+#
+# Both also require attacker-controlled build input to exploit, and this build
+# consumes only first-party content from this repository.
+#
+# GHSA-5c6j-r48x-rmvq  serialize-javascript  RCE via RegExp.flags
+#   resolved 6.0.2, patched >=7.0.3 (major). Reached through
+#   copy-webpack-plugin and css-minimizer-webpack-plugin; needs attacker-supplied
+#   objects to serialize.
+#
+# GHSA-mh99-v99m-4gvg  brace-expansion  DoS via unbounded expansion
+#   resolved 1.1.16, patched >=5.0.8 (four majors). Reached through
+#   serve-handler > minimatch; needs an attacker-supplied glob.
+#
+# Drop an entry as soon as Docusaurus ships a release that resolves past it.
+# Like `overrides`, this is only read from pnpm-workspace.yaml - a
+# `pnpm.auditConfig` block in package.json is silently ignored.
+auditConfig:
+  ignoreGhsas:
+    - GHSA-5c6j-r48x-rmvq
+    - GHSA-mh99-v99m-4gvg
