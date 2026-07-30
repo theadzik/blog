@@ -1,0 +1,61 @@
+name: PR Image Cleanup
+
+on:
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  delete-pr-tag:
+    name: Delete PR image tag
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # Nothing here needs the GITHUB_TOKEN at all.
+    permissions: {}
+    # Dependabot PRs never push an image, and a Dependabot-triggered run would
+    # read the Dependabot secret store, whose token is deliberately read-only.
+    # Fork PRs get no secrets at all.
+    if: >-
+      github.actor != 'dependabot[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - name: Delete PR image tag from Docker Hub
+        env:
+          DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          IMAGE_NAME: zmuda-pro-blog
+          TAG: pr-${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+
+          jwt=$(curl -sf -X POST \
+            -H "Content-Type: application/json" \
+            -d "{\"username\":\"${DOCKERHUB_USERNAME}\",\"password\":\"${DOCKERHUB_TOKEN}\"}" \
+            https://hub.docker.com/v2/users/login/ | jq -r .token)
+
+          if [[ -z "$jwt" || "$jwt" == "null" ]]; then
+            echo "::error title=Docker Hub::Could not authenticate to delete ${TAG}"
+            exit 1
+          fi
+
+          code=$(curl -s -o /dev/null -w '%{http_code}' -X DELETE \
+            -H "Authorization: JWT ${jwt}" \
+            "https://hub.docker.com/v2/repositories/${DOCKERHUB_USERNAME}/${IMAGE_NAME}/tags/${TAG}/")
+
+          case "$code" in
+            2*)
+              echo "Deleted ${IMAGE_NAME}:${TAG}"
+              ;;
+            404)
+              # The PR touched no website paths, so no image was ever built.
+              echo "No ${IMAGE_NAME}:${TAG} to delete"
+              ;;
+            403)
+              echo "::error title=Docker Hub::Token lacks delete scope. The PAT needs Read/Write/Delete to remove ${TAG}."
+              exit 1
+              ;;
+            *)
+              echo "::error title=Docker Hub::Unexpected HTTP ${code} deleting ${TAG}"
+              exit 1
+              ;;
+          esac
