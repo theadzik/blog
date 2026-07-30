@@ -57,6 +57,15 @@ jobs:
           username: ${{ env.REPOSITORY }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # Every stage of the Dockerfile is based on dhi.io, which issues no
+      # anonymous pull tokens. Same Docker account as above.
+      - name: Login to dhi.io
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
+        with:
+          registry: dhi.io
+          username: ${{ env.REPOSITORY }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
@@ -76,8 +85,9 @@ jobs:
           annotations: ${{ steps.meta.outputs.annotations }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          provenance: mode=max
-          sbom: true
+          # The local `docker` exporter used when not pushing rejects attestations.
+          provenance: ${{ inputs.push && 'mode=max' || 'false' }}
+          sbom: ${{ inputs.push }}
           build-args: |
             NODE_ENV=${{ inputs.environment }}
 
