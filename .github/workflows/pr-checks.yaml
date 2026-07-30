@@ -76,13 +76,18 @@ jobs:
     uses: ./.github/workflows/build-and-push.yaml
     with:
       environment: 'development'
-      push: true
+      # Dependabot PRs run with a read-only GITHUB_TOKEN, so they can build but
+      # not publish or attest. Own PRs keep pushing the pr-<n> tag as before.
+      push: ${{ github.actor != 'dependabot[bot]' }}
       tags: pr-${{ github.event.pull_request.number }}
     secrets: inherit
 
   lighthouse-report:
     name: Lighthouse Report
     needs: docker-build-test
+    # The service container below pulls the pr-<n> tag, which a Dependabot PR
+    # never pushes. Without this the job fails before any step runs.
+    if: ${{ github.actor != 'dependabot[bot]' }}
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write # for marocchino/sticky-pull-request-comment
