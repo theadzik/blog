@@ -45,7 +45,9 @@ jobs:
     # pull an image that was never built.
     if: ${{ github.actor != 'dependabot[bot]' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
+      contents: read # actions/checkout below
       pull-requests: write # for marocchino/sticky-pull-request-comment
     env:
       URL_DOMAIN: localhost:8080
@@ -60,6 +62,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
 
       - name: Generate URLs
         id: urls
