@@ -35,16 +35,51 @@ jobs:
         working-directory: zmuda-pro
         run: pnpm install --frozen-lockfile
 
+      # High and above fails the job: this is a required check, so a serious
+      # advisory should block the merge. Moderate and below is reported as a
+      # warning so it is visible without holding up unrelated work.
       - name: Run security audit
         working-directory: zmuda-pro
         run: |
+          if ! pnpm audit --audit-level=high; then
+            echo "::error title=pnpm audit::High or critical severity advisory found"
+            exit 1
+          fi
           if ! pnpm audit --audit-level=moderate; then
-            echo "::warning title=pnpm audit::Security audit reported moderate or higher vulnerabilities"
+            echo "::warning title=pnpm audit::Moderate or low severity advisory found"
           fi
 
+      # `pnpm outdated` exits non-zero whenever anything is outdated, which would
+      # fail this required check for a purely informational reason. Dependabot
+      # owns dependency freshness; this is a summary only.
       - name: Check for outdated packages
         working-directory: zmuda-pro
+        continue-on-error: true
         run: pnpm outdated
+
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    # Only meaningful for a pull request: the action diffs the manifests between
+    # base and head.
+    if: ${{ github.event_name == 'pull_request' }}
+    permissions:
+      contents: read
+      pull-requests: write # to post the review summary comment
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      # Dependabot is reactive - it alerts on advisories affecting what is already
+      # merged. This blocks a PR that would introduce a new vulnerable dependency
+      # in the first place.
+      - name: Review dependency changes
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: on-failure
 
   pre-commit:
     name: Pre-commit Checks
