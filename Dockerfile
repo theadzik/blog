@@ -11,7 +11,7 @@ WORKDIR /blog/zmuda-pro
 # hadolint ignore=DL3016 # pnpm version specified in package.json
 RUN npm install -g pnpm && pnpm install --frozen-lockfile --prod && pnpm run build
 
-FROM dhi.io/nginx:1.31.2-alpine3.23 AS runtime
+FROM dhi.io/nginx:1.31.3-alpine3.23 AS runtime
 
 COPY --from=builder /blog/zmuda-pro/build /usr/share/nginx/html
 COPY default.conf /etc/nginx/conf.d/default.conf
