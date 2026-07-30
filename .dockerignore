@@ -1,2 +1,15 @@
+# The build needs only zmuda-pro/, default.conf and .git (for showLastUpdateTime).
+# Everything else is excluded so it cannot reach a builder layer or the exported
+# build cache, and so repo-level changes do not invalidate the COPY layer.
 .docusaurus
 node_modules
+
+/.github
+/.vscode
+/.gitattributes
+/.gitignore
+/.pre-commit-config.yaml
+/.markdownlint.json
+/.yamllint.yaml
+/LICENSE
+/README.md

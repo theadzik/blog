@@ -32,3 +32,14 @@ repos:
     rev: v2.14.0
     hooks:
       - id: hadolint-docker
+  # GitHub secret scanning with push protection is already enabled, but that is
+  # server-side and only fires once a commit is on its way out. This catches a
+  # secret locally, before it exists in history at all.
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args:
+          - "--baseline"
+          - ".sec.baseline"
+        exclude: "pnpm-lock.yaml"
