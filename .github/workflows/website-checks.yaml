@@ -28,7 +28,9 @@ jobs:
       id-token: write
     uses: ./.github/workflows/build-and-push.yaml
     with:
-      environment: 'development'
+      # Must match what ships. Lighthouse auditing a development bundle would be
+      # measuring an artifact that never reaches production.
+      environment: 'production'
       # Dependabot PRs run with a read-only GITHUB_TOKEN, so they can build but
       # not publish or attest. Own PRs keep pushing the pr-<n> tag as before.
       push: ${{ github.actor != 'dependabot[bot]' }}
