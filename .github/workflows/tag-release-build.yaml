@@ -10,13 +10,24 @@ on:
 
 jobs:
   build-and-push:
-    uses: ./.github/workflows/build-and-push.yaml
+    uses: theadzik/github-workflows/.github/workflows/build-and-push.yaml@a75831dcde77fb4ad7caa180497a48fd0be072c4 # v1.0.0
     permissions:
       contents: read
       artifact-metadata: write
       attestations: write
       id-token: write
     with:
-      environment: production
+      image-name: zmuda-pro-blog
+      # Full history is required: the Dockerfile copies .git so Docusaurus can
+      # render showLastUpdateTime.
+      fetch-depth: 0
+      build-args: NODE_ENV=production
       push: true
+      # The CalVer tag is what the prod environment tracks
+      # (allowTags: ^[0-9]{4}\.[0-9]{1,2}\.[0-9]{1,2}$ in the homelab
+      # ImageUpdater). "latest" is published alongside it as a human pointer,
+      # which is what docker/metadata-action's default flavor did implicitly.
+      tags: |
+        type=ref,event=tag
+        type=raw,value=latest
     secrets: inherit

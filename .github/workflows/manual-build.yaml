@@ -1,0 +1,40 @@
+name: Manual Build
+
+# The workflow_dispatch entry point that used to sit on build-and-push.yaml.
+# That workflow now lives in theadzik/github-workflows, and a reusable workflow
+# in another repository cannot be dispatched from here, so the manual trigger
+# needs a thin caller of its own.
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "NODE_ENV to build with"
+        required: true
+        type: string
+        default: "production"
+      push:
+        description: "Whether to push the image to the registry"
+        required: true
+        type: boolean
+      tags:
+        description: "docker/metadata-action tag spec, one per line. Empty uses the action defaults."
+        required: false
+        type: string
+
+jobs:
+  build-and-push:
+    uses: theadzik/github-workflows/.github/workflows/build-and-push.yaml@a75831dcde77fb4ad7caa180497a48fd0be072c4 # v1.0.0
+    permissions:
+      contents: read
+      artifact-metadata: write
+      attestations: write
+      id-token: write
+    with:
+      image-name: zmuda-pro-blog
+      # Full history is required: the Dockerfile copies .git so Docusaurus can
+      # render showLastUpdateTime.
+      fetch-depth: 0
+      build-args: NODE_ENV=${{ inputs.environment }}
+      push: ${{ inputs.push }}
+      tags: ${{ inputs.tags }}
+    secrets: inherit
