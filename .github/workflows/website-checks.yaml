@@ -26,11 +26,15 @@ jobs:
       artifact-metadata: write
       attestations: write
       id-token: write
-    uses: ./.github/workflows/build-and-push.yaml
+    uses: theadzik/github-workflows/.github/workflows/build-and-push.yaml@a75831dcde77fb4ad7caa180497a48fd0be072c4 # v1.0.0
     with:
+      image-name: zmuda-pro-blog
+      # Full history is required: the Dockerfile copies .git so Docusaurus can
+      # render showLastUpdateTime.
+      fetch-depth: 0
       # Must match what ships. Lighthouse auditing a development bundle would be
       # measuring an artifact that never reaches production.
-      environment: 'production'
+      build-args: NODE_ENV=production
       # Dependabot PRs run with a read-only GITHUB_TOKEN, so they can build but
       # not publish or attest. Own PRs keep pushing the pr-<n> tag as before.
       push: ${{ github.actor != 'dependabot[bot]' }}

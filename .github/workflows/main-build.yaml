@@ -20,14 +20,18 @@ concurrency:
 
 jobs:
   build-and-push:
-    uses: ./.github/workflows/build-and-push.yaml
+    uses: theadzik/github-workflows/.github/workflows/build-and-push.yaml@a75831dcde77fb4ad7caa180497a48fd0be072c4 # v1.0.0
     permissions:
       contents: read
       artifact-metadata: write
       attestations: write
       id-token: write
     with:
-      environment: production
+      image-name: zmuda-pro-blog
+      # Full history is required: the Dockerfile copies .git so Docusaurus can
+      # render showLastUpdateTime.
+      fetch-depth: 0
+      build-args: NODE_ENV=production
       push: true
       # sha- is what the dev environment tracks. It has to be immutable and
       # distinct per commit: ArgoCD Image Updater writes the tag into git, so a
