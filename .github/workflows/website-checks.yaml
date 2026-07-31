@@ -26,7 +26,7 @@ jobs:
       artifact-metadata: write
       attestations: write
       id-token: write
-    uses: theadzik/github-workflows/.github/workflows/build-and-push.yaml@a75831dcde77fb4ad7caa180497a48fd0be072c4 # v1.0.0
+    uses: theadzik/github-workflows/.github/workflows/build-and-push.yaml@94086bb6b9c07ff6c9a073e0ac79c24415ec18ed # v1.1.0
     with:
       image-name: zmuda-pro-blog
       # Full history is required: the Dockerfile copies .git so Docusaurus can
