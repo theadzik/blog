@@ -1,8 +1,30 @@
-name: Website Checks
+name: Build
+
+# One workflow for every automatic build: pushes to main, CalVer release tags,
+# and pull requests. What differs between them is which tags get published and
+# whether the image is pushed at all, both of which are expressed below rather
+# than duplicated across three files.
 on:
+  push:
+    branches:
+      - "main"
+    tags:
+      # CalVer only (2026.7.5). "*" meant any tag - a scratch marker or a backup
+      # ref - triggered a production build.
+      - "[0-9][0-9][0-9][0-9].[0-9]*.[0-9]*"
+    # Only rebuild when something that changes the rendered site changes.
+    # Ignored for tag pushes, which always build - verified against this
+    # repository rather than assumed, since the documentation does not say so.
+    paths:
+      - "zmuda-pro/**"
+      - "Dockerfile"
+      - "default.conf"
+      - ".dockerignore"
   pull_request:
     branches:
       - "main"
+    # Same set, plus the audit thresholds. Workflow files are deliberately
+    # absent so that Dependabot action bumps do not trigger a build and audit.
     paths:
       - "zmuda-pro/**"
       - "Dockerfile"
@@ -12,18 +34,21 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  # Superseded pull request builds are worth cancelling; pushes are not. Every
+  # commit on main should produce its own immutable sha- image, so the dev
+  # environment keeps a traceable audit trail.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  docker-build-test:
-    name: Docker Build Push PR image
+  build-and-push:
+    name: Build and push image
+    uses: theadzik/github-workflows/.github/workflows/build-and-push.yaml@e3bd92f193c1814d832db2d32d5c7027a949df00 # v2.1.0-rc.5
     permissions:
       contents: read
       artifact-metadata: write
       packages: write
       attestations: write
       id-token: write
-    uses: theadzik/github-workflows/.github/workflows/build-and-push.yaml@e3bd92f193c1814d832db2d32d5c7027a949df00 # v2.1.0-rc.5
     with:
       registry: ghcr.io
       image-name: ${{ github.repository_owner }}/zmuda-pro-blog
@@ -38,19 +63,39 @@ jobs:
       build-args: NODE_ENV=production
       # Dependabot PRs run with a read-only GITHUB_TOKEN, so they can build but
       # not publish or attest.
-      push: ${{ github.actor != 'dependabot[bot]' }}
-      tags: pr-${{ github.event.pull_request.number }}
+      push: ${{ github.event_name != 'pull_request' || github.actor != 'dependabot[bot]' }}
+      # Each line applies only to the event that makes it meaningful, so one
+      # spec covers all three:
+      #   main   -> main, sha-<commit>
+      #   tag    -> 2026.7.5, latest
+      #   PR     -> pr-<number>
+      # sha- is what the dev environment tracks. It has to be immutable and
+      # distinct per commit: ArgoCD Image Updater writes the tag into git, so a
+      # mutable tag like "main" would write an unchanged value and ArgoCD would
+      # never re-sync. "main" is published alongside it purely as a convenience
+      # pointer for humans.
+      #
+      # The CalVer tag is what the prod environment tracks
+      # (allowTags: ^[0-9]{4}\.[0-9]{1,2}\.[0-9]{1,2}$ in the homelab
+      # ImageUpdater). "latest" is published alongside it as a human pointer.
+      tags: |
+        type=raw,value=main,enable={{is_default_branch}}
+        type=sha,enable={{is_default_branch}}
+        type=ref,event=tag
+        type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/') }}
+        type=ref,event=pr
     secrets:
       REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
       EXTRA_REGISTRY_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
 
   lighthouse-report:
     name: Lighthouse Report (PR image)
-    needs: docker-build-test
-    # The service container below pulls the pr-<n> tag, which a Dependabot PR
-    # never pushes. Without this the job fails before any step runs, trying to
-    # pull an image that was never built.
-    if: ${{ github.actor != 'dependabot[bot]' }}
+    needs: build-and-push
+    # Pull requests only, and not Dependabot's: the service container below
+    # pulls the pr-<n> tag, which a Dependabot PR never pushes. Without this the
+    # job fails before any step runs, trying to pull an image that was never
+    # built.
+    if: ${{ github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
