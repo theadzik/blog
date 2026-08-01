@@ -9,9 +9,12 @@ on:
     branches:
       - "main"
     tags:
-      # CalVer only (2026.7.5). "*" meant any tag - a scratch marker or a backup
-      # ref - triggered a production build.
-      - "[0-9][0-9][0-9][0-9].[0-9]*.[0-9]*"
+      # CalVer only: 2026.8.1 and 2026.11.12, nothing else. In a filter pattern
+      # `+` repeats the preceding character while `*` matches any characters, so
+      # [0-9]* also accepted 2026.8.1-backup and 2026.8.1.2 - a scratch marker or
+      # a backup ref would have triggered a production release. Confirmed by
+      # pushing all four shapes: only the two CalVer ones run.
+      - "[0-9][0-9][0-9][0-9].[0-9]+.[0-9]+"
     # Only rebuild when something that changes the rendered site changes.
     # Ignored for tag pushes, which always build - verified against this
     # repository rather than assumed, since the documentation does not say so.
