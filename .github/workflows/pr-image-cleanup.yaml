@@ -6,56 +6,78 @@ on:
       - closed
 
 jobs:
-  delete-pr-tag:
-    name: Delete PR image tag
+  delete-pr-image:
+    name: Delete PR image
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    # Nothing here needs the GITHUB_TOKEN at all.
-    permissions: {}
-    # Dependabot PRs never push an image, and a Dependabot-triggered run would
-    # read the Dependabot secret store, whose token is deliberately read-only.
-    # Fork PRs get no secrets at all.
+    permissions:
+      packages: write
+    # Dependabot PRs never push an image, and fork PRs get no package access.
     if: >-
       github.actor != 'dependabot[bot]' &&
       github.event.pull_request.head.repo.full_name == github.repository
     steps:
-      - name: Delete PR image tag from Docker Hub
+      # ghcr.io has no way to delete a single tag: the API deletes a package
+      # *version*, which is the manifest and every tag pointing at it. So this
+      # finds the version carrying the pr- tag and refuses to touch it if any
+      # other tag shares it - two builds with identical content resolve to one
+      # digest, and deleting it would take the other tag down as well.
+      - name: Delete PR image from ghcr.io
         env:
-          DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-          IMAGE_NAME: zmuda-pro-blog
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+          PACKAGE: zmuda-pro-blog
           TAG: pr-${{ github.event.pull_request.number }}
-        run: |
+        run: |-
           set -euo pipefail
 
-          jwt=$(curl -sf -X POST \
-            -H "Content-Type: application/json" \
-            -d "{\"username\":\"${DOCKERHUB_USERNAME}\",\"password\":\"${DOCKERHUB_TOKEN}\"}" \
-            https://hub.docker.com/v2/users/login/ | jq -r .token)
+          versions=$(gh api --paginate "/users/${OWNER}/packages/container/${PACKAGE}/versions" 2>/dev/null || echo '[]')
 
-          if [[ -z "$jwt" || "$jwt" == "null" ]]; then
-            echo "::error title=Docker Hub::Could not authenticate to delete ${TAG}"
-            exit 1
+          version=$(jq -c --arg tag "${TAG}" \
+            '[.[] | select(.metadata.container.tags // [] | index($tag))] | first // empty' <<< "${versions}")
+
+          if [[ -z "${version}" ]]; then
+            # The PR touched no website paths, so no image was ever built.
+            echo "No ${PACKAGE}:${TAG} to delete"
+            exit 0
           fi
 
-          code=$(curl -s -o /dev/null -w '%{http_code}' -X DELETE \
-            -H "Authorization: JWT ${jwt}" \
-            "https://hub.docker.com/v2/repositories/${DOCKERHUB_USERNAME}/${IMAGE_NAME}/tags/${TAG}/")
+          id=$(jq -r '.id' <<< "${version}")
+          digest=$(jq -r '.name' <<< "${version}")
+          tags=$(jq -r '.metadata.container.tags | join(", ")' <<< "${version}")
 
-          case "$code" in
-            2*)
-              echo "Deleted ${IMAGE_NAME}:${TAG}"
-              ;;
-            404)
-              # The PR touched no website paths, so no image was ever built.
-              echo "No ${IMAGE_NAME}:${TAG} to delete"
-              ;;
-            403)
-              echo "::error title=Docker Hub::Token lacks delete scope. The PAT needs Read/Write/Delete to remove ${TAG}."
-              exit 1
-              ;;
-            *)
-              echo "::error title=Docker Hub::Unexpected HTTP ${code} deleting ${TAG}"
-              exit 1
-              ;;
-          esac
+          others=$(jq -r --arg tag "${TAG}" '[.metadata.container.tags[] | select(. != $tag)] | length' <<< "${version}")
+          if [[ "${others}" -gt 0 ]]; then
+            echo "::warning title=PR image::${digest} is also tagged ${tags}; leaving it alone rather than deleting those too"
+            exit 0
+          fi
+
+          # The signature and attestations are separate untagged versions that
+          # reference this digest. Listed before the delete, while the manifest
+          # they hang off still resolves. Best effort: losing them costs a few
+          # orphaned blobs, not the cleanup.
+          referrers=""
+          if token=$(curl -fsSL -u "${OWNER}:${GH_TOKEN}" \
+              "https://ghcr.io/token?service=ghcr.io&scope=repository:${OWNER}/${PACKAGE}:pull" | jq -er .token 2>/dev/null); then
+            referrers=$(curl -fsSL -H "Authorization: Bearer ${token}" \
+              "https://ghcr.io/v2/${OWNER}/${PACKAGE}/referrers/${digest}" 2>/dev/null \
+              | jq -r '.manifests[]?.digest' || true)
+          fi
+
+          delete_version() {
+            local vid="$1" what="$2" code
+            code=$(gh api -X DELETE "/users/${OWNER}/packages/container/${PACKAGE}/versions/${vid}" \
+              --silent --include 2>&1 | head -1 || true)
+            echo "  ${what}: ${code:-deleted}"
+          }
+
+          for ref in ${referrers}; do
+            rid=$(jq -r --arg d "${ref}" '.[] | select(.name == $d) | .id' <<< "${versions}")
+            [[ -n "${rid}" ]] && delete_version "${rid}" "referrer ${ref}"
+          done
+
+          if ! gh api -X DELETE "/users/${OWNER}/packages/container/${PACKAGE}/versions/${id}" --silent; then
+            echo "::error title=PR image::Could not delete ${PACKAGE}:${TAG}. GITHUB_TOKEN can only delete versions of a package that grants this repository the Admin role under Package settings > Manage Actions access."
+            exit 1
+          fi
+          echo "Deleted ${PACKAGE}:${TAG} (${digest})"

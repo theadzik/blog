@@ -1,9 +1,5 @@
 name: Manual Build
 
-# The workflow_dispatch entry point that used to sit on build-and-push.yaml.
-# That workflow now lives in theadzik/github-workflows, and a reusable workflow
-# in another repository cannot be dispatched from here, so the manual trigger
-# needs a thin caller of its own.
 on:
   workflow_dispatch:
     inputs:
@@ -23,18 +19,25 @@ on:
 
 jobs:
   build-and-push:
-    uses: theadzik/github-workflows/.github/workflows/build-and-push.yaml@385f40d549c2e2d3320ad1454bebe9314c9691e9 # v2.0.0-rc.5
+    uses: theadzik/github-workflows/.github/workflows/build-and-push.yaml@e3bd92f193c1814d832db2d32d5c7027a949df00 # v2.1.0-rc.5
     permissions:
       contents: read
       artifact-metadata: write
+      packages: write
       attestations: write
       id-token: write
     with:
-      image-name: zmuda-pro-blog
+      registry: ghcr.io
+      image-name: ${{ github.repository_owner }}/zmuda-pro-blog
+      registry-username: ${{ github.actor }}
+      extra-registry: dhi.io
+      extra-registry-username: ${{ vars.DOCKERHUB_USERNAME }}
       # Full history is required: the Dockerfile copies .git so Docusaurus can
       # render showLastUpdateTime.
       fetch-depth: 0
       build-args: NODE_ENV=${{ inputs.environment }}
       push: ${{ inputs.push }}
       tags: ${{ inputs.tags }}
-    secrets: inherit
+    secrets:
+      REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+      EXTRA_REGISTRY_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}

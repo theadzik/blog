@@ -3,31 +3,32 @@ name: Tag Release Build
 on:
   push:
     tags:
-      # CalVer only (2026.7.5). "*" meant any tag - a scratch marker or a backup
-      # ref - triggered a production build and pushed it to Docker Hub, where
-      # ArgoCD Image Updater would consider it for the prod deployment.
-      - "[0-9][0-9][0-9][0-9].[0-9]*.[0-9]*"
+      # CalVer only (2026.7.5)
+      - "[0-9][0-9][0-9][0-9].[0-9]+.[0-9]+"
 
 jobs:
   build-and-push:
-    uses: theadzik/github-workflows/.github/workflows/build-and-push.yaml@385f40d549c2e2d3320ad1454bebe9314c9691e9 # v2.0.0-rc.5
+    uses: theadzik/github-workflows/.github/workflows/build-and-push.yaml@e3bd92f193c1814d832db2d32d5c7027a949df00 # v2.1.0-rc.5
     permissions:
       contents: read
       artifact-metadata: write
+      packages: write
       attestations: write
       id-token: write
     with:
-      image-name: zmuda-pro-blog
+      registry: ghcr.io
+      image-name: ${{ github.repository_owner }}/zmuda-pro-blog
+      registry-username: ${{ github.actor }}
+      extra-registry: dhi.io
+      extra-registry-username: ${{ vars.DOCKERHUB_USERNAME }}
       # Full history is required: the Dockerfile copies .git so Docusaurus can
       # render showLastUpdateTime.
       fetch-depth: 0
       build-args: NODE_ENV=production
       push: true
-      # The CalVer tag is what the prod environment tracks
-      # (allowTags: ^[0-9]{4}\.[0-9]{1,2}\.[0-9]{1,2}$ in the homelab
-      # ImageUpdater). "latest" is published alongside it as a human pointer,
-      # which is what docker/metadata-action's default flavor did implicitly.
       tags: |
         type=ref,event=tag
         type=raw,value=latest
-    secrets: inherit
+    secrets:
+      REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+      EXTRA_REGISTRY_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
