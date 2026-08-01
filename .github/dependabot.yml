@@ -14,7 +14,7 @@ updates:
     schedule:
       interval: "weekly"
     cooldown:
-      default-days: 3
+      default-days: 7
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
@@ -50,7 +50,7 @@ updates:
     schedule:
       interval: "weekly"
     cooldown:
-      default-days: 3
+      default-days: 7
     open-pull-requests-limit: 3
     labels:
       - "dependencies"
@@ -66,7 +66,7 @@ updates:
     schedule:
       interval: "weekly"
     cooldown:
-      default-days: 3
+      default-days: 7
     open-pull-requests-limit: 3
     # Only "dependencies" here: Dependabot drops labels that do not already
     # exist in the repository, and there is no "pre-commit" label.
@@ -88,7 +88,7 @@ updates:
     schedule:
       interval: "weekly"
     cooldown:
-      default-days: 3
+      default-days: 7
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
