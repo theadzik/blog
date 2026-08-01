@@ -23,7 +23,7 @@ on:
 
 jobs:
   build-and-push:
-    uses: theadzik/github-workflows/.github/workflows/build-and-push.yaml@b5acacc8104a209ced4a0c20f73231a5fe912105 # v2.1.0-rc.2
+    uses: theadzik/github-workflows/.github/workflows/build-and-push.yaml@a68501109de1ebe28c9192364f88b8bfadbf5b79 # v2.1.0-rc.3
     permissions:
       contents: read
       artifact-metadata: write
@@ -32,11 +32,16 @@ jobs:
       id-token: write
     with:
       registry: ghcr.io
-      image-name: zmuda-pro-blog
+      image-name: ${{ github.repository_owner }}/zmuda-pro-blog
+      registry-username: ${{ github.actor }}
+      extra-registry: dhi.io
+      extra-registry-username: ${{ vars.DOCKERHUB_USERNAME }}
       # Full history is required: the Dockerfile copies .git so Docusaurus can
       # render showLastUpdateTime.
       fetch-depth: 0
       build-args: NODE_ENV=${{ inputs.environment }}
       push: ${{ inputs.push }}
       tags: ${{ inputs.tags }}
-    secrets: inherit
+    secrets:
+      REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+      EXTRA_REGISTRY_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
