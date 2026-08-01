@@ -19,7 +19,7 @@ This repository builds and publishes the container image serving
 - The site content and Docusaurus configuration under `zmuda-pro/`
 - The container build (`Dockerfile`, `default.conf`)
 - The GitHub Actions workflows under `.github/workflows/`
-- The published image `docker.io/theadzik/zmuda-pro-blog`
+- The published image `ghcr.io/theadzik/zmuda-pro-blog`
 
 Out of scope: the infrastructure the site runs on (that is a separate,
 private-by-default homelab), and findings that require an already-compromised
