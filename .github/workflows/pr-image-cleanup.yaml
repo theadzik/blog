@@ -31,13 +31,27 @@ jobs:
         run: |-
           set -euo pipefail
 
-          versions=$(gh api --paginate "/users/${OWNER}/packages/container/${PACKAGE}/versions" 2>/dev/null || echo '[]')
+          # gh prints the error body to stdout and exits non-zero, so failures
+          # must be caught here rather than fed to jq: iterating an error object
+          # yields its values, and the run reports "nothing to delete" for what
+          # is really a permission or availability problem.
+          if ! versions=$(gh api --paginate "/users/${OWNER}/packages/container/${PACKAGE}/versions" 2>"${RUNNER_TEMP}/gh-error"); then
+            if grep -q '(HTTP 404)' "${RUNNER_TEMP}/gh-error"; then
+              # Nothing was ever published under this name - the normal outcome
+              # for a PR that touched no website paths.
+              echo "No ${PACKAGE} package in ghcr.io; nothing to delete"
+              exit 0
+            fi
+            cat "${RUNNER_TEMP}/gh-error" >&2
+            echo "::error title=PR image::Could not list versions of ${PACKAGE}"
+            exit 1
+          fi
 
           version=$(jq -c --arg tag "${TAG}" \
             '[.[] | select(.metadata.container.tags // [] | index($tag))] | first // empty' <<< "${versions}")
 
           if [[ -z "${version}" ]]; then
-            # The PR touched no website paths, so no image was ever built.
+            # The package exists, but nothing carries this PR's tag.
             echo "No ${PACKAGE}:${TAG} to delete"
             exit 0
           fi
