@@ -4,7 +4,7 @@ registries:
   dhi:
     type: docker-registry
     url: https://dhi.io
-    username: theadzik
+    username: ${{ secrets.DOCKERHUB_USERNAME }}
     password: ${{ secrets.DOCKERHUB_TOKEN }}
 
 updates:
