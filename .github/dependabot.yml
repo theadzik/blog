@@ -4,7 +4,7 @@ registries:
   dhi:
     type: docker-registry
     url: https://dhi.io
-    username: theadzik
+    username: ${{ secrets.DOCKERHUB_USERNAME }}
     password: ${{ secrets.DOCKERHUB_TOKEN }}
 
 updates:
@@ -14,7 +14,12 @@ updates:
     schedule:
       interval: "weekly"
     cooldown:
-      default-days: 3
+      default-days: 7
+      # Majors carry the largest diff and get the least useful review, and
+      # upstream's follow-up patch usually lands inside two weeks. The 7 days
+      # above are what covers the supply-chain case, for every bump type.
+      # Only npm and pip honour this key; the entries below ignore it.
+      semver-major-days: 14
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
@@ -50,7 +55,7 @@ updates:
     schedule:
       interval: "weekly"
     cooldown:
-      default-days: 3
+      default-days: 7
     open-pull-requests-limit: 3
     labels:
       - "dependencies"
@@ -58,13 +63,37 @@ updates:
     commit-message:
       prefix: "docker"
 
+  # pre-commit hooks. These are the local half of the same checks CI runs, so a
+  # pinned rev going stale means the linters and detect-secrets silently stop
+  # gaining new rules.
+  - package-ecosystem: "pre-commit"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 3
+    # Only "dependencies" here: Dependabot drops labels that do not already
+    # exist in the repository, and there is no "pre-commit" label.
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "pre-commit"
+    groups:
+      pre-commit-hooks:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
   # GitHub Actions workflows
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
     cooldown:
-      default-days: 3
+      default-days: 7
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
