@@ -23,7 +23,7 @@ on:
 
 jobs:
   build-and-push:
-    uses: theadzik/github-workflows/.github/workflows/build-and-push.yaml@31365df5d29524dd7afe6052b3fd765502f4f548 # v2.1.0-rc.4
+    uses: theadzik/github-workflows/.github/workflows/build-and-push.yaml@e3bd92f193c1814d832db2d32d5c7027a949df00 # v2.1.0-rc.5
     permissions:
       contents: read
       artifact-metadata: write
