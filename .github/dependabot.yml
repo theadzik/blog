@@ -58,6 +58,30 @@ updates:
     commit-message:
       prefix: "docker"
 
+  # pre-commit hooks. These are the local half of the same checks CI runs, so a
+  # pinned rev going stale means the linters and detect-secrets silently stop
+  # gaining new rules.
+  - package-ecosystem: "pre-commit"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 3
+    open-pull-requests-limit: 3
+    # Only "dependencies" here: Dependabot drops labels that do not already
+    # exist in the repository, and there is no "pre-commit" label.
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "pre-commit"
+    groups:
+      pre-commit-hooks:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
   # GitHub Actions workflows
   - package-ecosystem: "github-actions"
     directory: "/"
