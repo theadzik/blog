@@ -24,10 +24,12 @@ jobs:
     permissions:
       contents: read
       artifact-metadata: write
+      packages: write
       attestations: write
       id-token: write
-    uses: theadzik/github-workflows/.github/workflows/build-and-push.yaml@385f40d549c2e2d3320ad1454bebe9314c9691e9 # v2.0.0-rc.5
+    uses: theadzik/github-workflows/.github/workflows/build-and-push.yaml@b5acacc8104a209ced4a0c20f73231a5fe912105 # v2.1.0-rc.2
     with:
+      registry: ghcr.io
       image-name: zmuda-pro-blog
       # Full history is required: the Dockerfile copies .git so Docusaurus can
       # render showLastUpdateTime.
@@ -53,14 +55,21 @@ jobs:
     permissions:
       contents: read # actions/checkout below
       pull-requests: write # for marocchino/sticky-pull-request-comment
+      packages: read # the service container below pulls from ghcr.io
     env:
       URL_DOMAIN: localhost:8080
-      REGISTRY: docker.io
-      REPOSITORY: ${{ vars.DOCKERHUB_USERNAME }}
+      REGISTRY: ghcr.io
+      REPOSITORY: ${{ github.repository_owner }}
       IMAGE_NAME: zmuda-pro-blog
     services:
       web:
-        image: docker.io/theadzik/zmuda-pro-blog:pr-${{ github.event.pull_request.number }}
+        image: ghcr.io/theadzik/zmuda-pro-blog:pr-${{ github.event.pull_request.number }}
+        # A newly created ghcr.io package is private until published, and a
+        # service container is pulled before any step runs, so it cannot rely on
+        # a login step.
+        credentials:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
         ports:
           - 8080:8080
     steps:

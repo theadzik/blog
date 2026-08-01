@@ -20,13 +20,15 @@ concurrency:
 
 jobs:
   build-and-push:
-    uses: theadzik/github-workflows/.github/workflows/build-and-push.yaml@385f40d549c2e2d3320ad1454bebe9314c9691e9 # v2.0.0-rc.5
+    uses: theadzik/github-workflows/.github/workflows/build-and-push.yaml@b5acacc8104a209ced4a0c20f73231a5fe912105 # v2.1.0-rc.2
     permissions:
       contents: read
       artifact-metadata: write
+      packages: write
       attestations: write
       id-token: write
     with:
+      registry: ghcr.io
       image-name: zmuda-pro-blog
       # Full history is required: the Dockerfile copies .git so Docusaurus can
       # render showLastUpdateTime.
