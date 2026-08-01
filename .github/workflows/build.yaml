@@ -37,7 +37,7 @@ concurrency:
 jobs:
   build-and-push:
     name: Build and push image
-    uses: theadzik/github-workflows/.github/workflows/build-and-push.yaml@e3bd92f193c1814d832db2d32d5c7027a949df00 # v2.1.0-rc.5
+    uses: theadzik/github-workflows/.github/workflows/build-and-push.yaml@1d7be13ba716c8f074a22d26eb8cfa7b032d00e8 # v2.1.0
     permissions:
       contents: read
       artifact-metadata: write
