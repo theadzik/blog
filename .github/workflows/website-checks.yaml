@@ -3,10 +3,6 @@ on:
   pull_request:
     branches:
       - "main"
-    # Only paths that change the rendered site: page source and content, the
-    # build recipe, the nginx config (its headers move Lighthouse scores) and
-    # the audit thresholds. Workflow files are deliberately absent so that
-    # Dependabot action bumps do not trigger a build and audit.
     paths:
       - "zmuda-pro/**"
       - "Dockerfile"
@@ -41,7 +37,7 @@ jobs:
       # measuring an artifact that never reaches production.
       build-args: NODE_ENV=production
       # Dependabot PRs run with a read-only GITHUB_TOKEN, so they can build but
-      # not publish or attest. Own PRs keep pushing the pr-<n> tag as before.
+      # not publish or attest.
       push: ${{ github.actor != 'dependabot[bot]' }}
       tags: pr-${{ github.event.pull_request.number }}
     secrets:
@@ -64,11 +60,10 @@ jobs:
     env:
       URL_DOMAIN: localhost:8080
       REGISTRY: ghcr.io
-      REPOSITORY: ${{ github.repository_owner }}
       IMAGE_NAME: zmuda-pro-blog
     services:
       web:
-        image: ghcr.io/theadzik/zmuda-pro-blog:pr-${{ github.event.pull_request.number }}
+        image: ghcr.io/${{ github.repository_owner }}/zmuda-pro-blog:pr-${{ github.event.pull_request.number }}
         # A newly created ghcr.io package is private until published, and a
         # service container is pulled before any step runs, so it cannot rely on
         # a login step.

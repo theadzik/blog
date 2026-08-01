@@ -1,9 +1,5 @@
 name: Manual Build
 
-# The workflow_dispatch entry point that used to sit on build-and-push.yaml.
-# That workflow now lives in theadzik/github-workflows, and a reusable workflow
-# in another repository cannot be dispatched from here, so the manual trigger
-# needs a thin caller of its own.
 on:
   workflow_dispatch:
     inputs:
