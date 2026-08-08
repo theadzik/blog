@@ -21,18 +21,19 @@ overrides:
   svgo: ">=3.3.4 <4"
   fast-uri: ">=3.1.4 <4"
   postcss: ">=8.5.18 <9"
+  fast-uri@>=3.0.0 <3.1.5: ">=3.1.5 <4"
 
-# Accepted advisories, reviewed 2026-07-30, re-review by 2026-10-30.
+# Accepted advisories, reviewed 2026-08-08, re-review by 2026-10-30.
 #
-# Both are transitive build-time dependencies of @docusaurus/core. Neither
-# reaches the runtime image, which ships the static output from `docusaurus
-# build` behind nginx and contains no node_modules. Neither can be fixed by an
-# override the way the three above were: each patched version is a major
-# release away from what Docusaurus resolves, so forcing it would upgrade a
-# transitive dependency its parent was never tested against - a larger risk than
-# the advisory itself.
+# These are transitive build-time dependencies of @docusaurus/core and related
+# Docusaurus packages. None reaches the runtime image, which ships the static
+# output from `docusaurus build` behind nginx and contains no node_modules.
+# None can be fixed by an override the way the three above were: each patched
+# version is a major release away from what Docusaurus resolves, so forcing it
+# would upgrade a transitive dependency its parent was never tested against - a
+# larger risk than the advisory itself.
 #
-# Both also require attacker-controlled build input to exploit, and this build
+# They also require attacker-controlled build input to exploit, and this build
 # consumes only first-party content from this repository.
 #
 # GHSA-5c6j-r48x-rmvq  serialize-javascript  RCE via RegExp.flags
@@ -44,6 +45,14 @@ overrides:
 #   resolved 1.1.16, patched >=5.0.8 (four majors). Reached through
 #   serve-handler > minimatch; needs an attacker-supplied glob.
 #
+# GHSA-w3rx-r6r6-pgpr  image-size  DoS via infinite loop in ICNS parser
+#   resolved 2.0.2, patched >=2.0.3. Reached through @docusaurus/mdx-loader;
+#   only relevant when processing image files during the build.
+#
+# GHSA-5p2g-fcmc-qvqq  image-size  DoS via infinite loop in JXL/HEIF parsers
+#   resolved 2.0.2, patched >=2.0.3. Reached through @docusaurus/mdx-loader;
+#   only relevant when processing image files during the build.
+#
 # Drop an entry as soon as Docusaurus ships a release that resolves past it.
 # Like `overrides`, this is only read from pnpm-workspace.yaml - a
 # `pnpm.auditConfig` block in package.json is silently ignored.
@@ -51,3 +60,9 @@ auditConfig:
   ignoreGhsas:
     - GHSA-5c6j-r48x-rmvq
     - GHSA-mh99-v99m-4gvg
+    - GHSA-w3rx-r6r6-pgpr
+    - GHSA-5p2g-fcmc-qvqq
+
+minimumReleaseAgeExclude:
+  - fast-uri@3.1.5
+  - image-size@2.0.3
