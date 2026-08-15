@@ -26,6 +26,7 @@ on:
       - "default.conf"
       - ".dockerignore"
       - ".github/workflows/lighthouserc.json"
+      - ".github/workflows/build.yaml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -37,7 +38,7 @@ concurrency:
 jobs:
   build-and-push:
     name: Build and push image
-    uses: theadzik/github-workflows/.github/workflows/build-and-push.yaml@069e91f4da064e15e493fc1d88da7d99341345c8 # v3.0.0
+    uses: theadzik/github-workflows/.github/workflows/build-and-push.yaml@bc3bbe8c89bd2d610c35185f020aeec522db9306 # v4.0.0
     permissions:
       contents: read
       artifact-metadata: write
@@ -56,6 +57,9 @@ jobs:
       # Must match what ships. Lighthouse auditing a development bundle would be
       # measuring an artifact that never reaches production.
       build-args: NODE_ENV=production
+      # Accepted findings, with a reason and an expiry per entry. Not read
+      # unless it is named here.
+      trivyignores: .trivyignore.yaml
       # Dependabot PRs run with a read-only GITHUB_TOKEN, so they can build but
       # not publish or attest.
       push: ${{ github.event_name != 'pull_request' || github.actor != 'dependabot[bot]' }}

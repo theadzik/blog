@@ -19,7 +19,7 @@ on:
 
 jobs:
   build-and-push:
-    uses: theadzik/github-workflows/.github/workflows/build-and-push.yaml@069e91f4da064e15e493fc1d88da7d99341345c8 # v3.0.0
+    uses: theadzik/github-workflows/.github/workflows/build-and-push.yaml@bc3bbe8c89bd2d610c35185f020aeec522db9306 # v4.0.0
     permissions:
       contents: read
       artifact-metadata: write
@@ -36,6 +36,9 @@ jobs:
       # render showLastUpdateTime.
       fetch-depth: 0
       build-args: NODE_ENV=${{ inputs.environment }}
+      # Accepted findings, with a reason and an expiry per entry. Not read
+      # unless it is named here.
+      trivyignores: .trivyignore.yaml
       push: ${{ inputs.push }}
       tags: ${{ inputs.tags }}
     secrets:
