@@ -36,6 +36,9 @@ jobs:
       # render showLastUpdateTime.
       fetch-depth: 0
       build-args: NODE_ENV=${{ inputs.environment }}
+      # Accepted findings, with a reason and an expiry per entry. Not read
+      # unless it is named here.
+      trivyignores: .trivyignore.yaml
       push: ${{ inputs.push }}
       tags: ${{ inputs.tags }}
     secrets:

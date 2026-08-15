@@ -1,0 +1,34 @@
+# Findings accepted for the container build. Read only because build.yaml and
+# manual-build.yaml name this file in the `trivyignores` input of
+# theadzik/github-workflows build-and-push.yaml; Trivy does not discover it.
+#
+# This is a different list from `auditConfig.ignoreGhsas` in
+# zmuda-pro/pnpm-workspace.yaml, and the two are not interchangeable. That one is
+# read by `pnpm audit`. This one is read by the Trivy scan that gates the image
+# build. A finding has to be accepted in both places to be silent in both.
+#
+# Only entries that actually fail a build belong here. The scan runs with
+# `--ignore-unfixed` at HIGH and CRITICAL, so the two image-size advisories
+# (GHSA-w3rx-r6r6-pgpr, GHSA-5p2g-fcmc-qvqq) are already dropped: they have no
+# fixed version for the resolved 2.0.2. GHSA-mh99-v99m-4gvg does not surface at
+# this severity either. Add them only if a build starts failing on them.
+#
+# Every acceptance carries an expiry so it stops applying on a date rather than
+# outliving its reason. Drop an entry as soon as Docusaurus ships a release that
+# resolves past it.
+
+vulnerabilities:
+  - id: GHSA-5c6j-r48x-rmvq
+    statement: >-
+      serialize-javascript, RCE via RegExp and Date.prototype.toISOString().
+      Resolved 6.0.2, patched in 7.0.3, which is a major bump. Transitive
+      through @docusaurus/core 3.10.2, so it cannot move until Docusaurus
+      moves; a pnpm override would force it ahead of what Docusaurus tests
+      against.
+
+      Build-time only. The Dockerfile is multi-stage: the runtime image is nginx
+      serving the compiled site, and carries no node_modules, so this package is
+      never present in the published image. Exploiting it needs
+      attacker-supplied objects to serialize, and only build-time content is
+      serialized here.
+    expired_at: 2026-11-15

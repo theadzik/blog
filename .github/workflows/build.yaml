@@ -57,6 +57,9 @@ jobs:
       # Must match what ships. Lighthouse auditing a development bundle would be
       # measuring an artifact that never reaches production.
       build-args: NODE_ENV=production
+      # Accepted findings, with a reason and an expiry per entry. Not read
+      # unless it is named here.
+      trivyignores: .trivyignore.yaml
       # Dependabot PRs run with a read-only GITHUB_TOKEN, so they can build but
       # not publish or attest.
       push: ${{ github.event_name != 'pull_request' || github.actor != 'dependabot[bot]' }}
