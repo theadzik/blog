@@ -37,7 +37,7 @@ concurrency:
 jobs:
   build-and-push:
     name: Build and push image
-    uses: theadzik/github-workflows/.github/workflows/build-and-push.yaml@59202524db1536b7e91d4c8a9e16e9de15f1ab24 # v2.2.0
+    uses: theadzik/github-workflows/.github/workflows/build-and-push.yaml@069e91f4da064e15e493fc1d88da7d99341345c8 # v3.0.0
     permissions:
       contents: read
       artifact-metadata: write
@@ -59,20 +59,6 @@ jobs:
       # Dependabot PRs run with a read-only GITHUB_TOKEN, so they can build but
       # not publish or attest.
       push: ${{ github.event_name != 'pull_request' || github.actor != 'dependabot[bot]' }}
-      # Each line applies only to the event that makes it meaningful, so one
-      # spec covers all three:
-      #   main   -> main, sha-<commit>
-      #   tag    -> 2026.7.5, latest
-      #   PR     -> pr-<number>
-      # sha- is what the dev environment tracks. It has to be immutable and
-      # distinct per commit: ArgoCD Image Updater writes the tag into git, so a
-      # mutable tag like "main" would write an unchanged value and ArgoCD would
-      # never re-sync. "main" is published alongside it purely as a convenience
-      # pointer for humans.
-      #
-      # The CalVer tag is what the prod environment tracks
-      # (allowTags: ^[0-9]{4}\.[0-9]{1,2}\.[0-9]{1,2}$ in the homelab
-      # ImageUpdater). "latest" is published alongside it as a human pointer.
       tags: |
         type=raw,value=main,enable={{is_default_branch}}
         type=sha,enable={{is_default_branch}}
