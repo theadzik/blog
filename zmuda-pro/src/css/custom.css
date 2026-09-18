@@ -131,7 +131,7 @@
   gap: 0.25rem;
 }
 
-@media (max-width: 768px) {
+@media screen and (max-width: 768px) {
   .resume-header {
     grid-template-columns: 1fr;
     justify-items: center;
@@ -149,6 +149,35 @@
 
   .resume-contact-list {
     justify-items: center;
+  }
+}
+
+/* Letterhead-style header for print: small avatar left, contacts on one line. */
+@media print {
+  .resume-header {
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .resume-avatar {
+    width: 96px;
+    height: 96px;
+  }
+
+  .resume-title {
+    margin: 0.125rem 0 0.5rem;
+  }
+
+  .resume-contact-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 0.75rem;
+  }
+
+  .resume-contact-list li + li::before {
+    content: '·';
+    margin-right: 0.75rem;
   }
 }
 
