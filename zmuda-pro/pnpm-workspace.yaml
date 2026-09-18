@@ -21,7 +21,8 @@ overrides:
   svgo: ">=3.3.4 <4"
   fast-uri: ">=3.1.4 <4"
   postcss: ">=8.5.18 <9"
-  fast-uri@>=3.0.0 <3.1.5: ">=3.1.5 <4"
+  fast-uri@>=3.0.0 <3.1.6: ">=3.1.6 <4"
+  js-yaml@>=4.0.0 <4.3.2: ^4.3.2
 
 # Accepted advisories, reviewed 2026-08-08, re-review by 2026-10-30.
 #
@@ -64,5 +65,6 @@ auditConfig:
     - GHSA-5p2g-fcmc-qvqq
 
 minimumReleaseAgeExclude:
-  - fast-uri@3.1.5
+  - fast-uri@3.1.5 || 3.1.6
   - image-size@2.0.3
+  - js-yaml@4.3.2
