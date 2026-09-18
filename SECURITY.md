@@ -32,9 +32,12 @@ So that reports can skip what is known and already handled:
 - Base images are [Docker Hardened Images](https://www.docker.com/products/hardened-images/);
   every build stage uses `dhi.io/*`.
 - Images are scanned with Trivy (HIGH/CRITICAL, fixable) **before** they are
-  published; a finding fails the build.
-- Every published image carries a cosign-signed SPDX SBOM and SLSA provenance
-  attestation, verified at admission time before it is allowed to run.
+  published; a finding fails the build. The build context is scanned as well, so
+  a vulnerable build-time dependency or a committed secret fails it too.
+- Every published image carries a cosign signature, two CycloneDX SBOMs (one for
+  the image, one for the build context) and a SLSA provenance attestation. The
+  build verifies all four before it publishes any tag, and the cluster verifies
+  the signature again at admission before the image is allowed to run.
 - All third-party GitHub Actions are pinned by commit SHA.
 - Dependencies are updated by Dependabot; `pnpm audit` fails a pull request on a
   high or critical advisory, and `dependency-review` blocks a pull request that
