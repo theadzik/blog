@@ -64,6 +64,11 @@
 }
 
 @media print {
+  /* Shrink all text for print; headings are sized in rem, so they scale too. */
+  :root {
+    --ifm-font-size-base: 87.5%;
+  }
+
   /* Keep grouped content together where possible when exporting to PDF. */
   .pdf-keep {
     break-inside: avoid;
