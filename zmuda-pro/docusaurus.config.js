@@ -4,7 +4,7 @@
 // There are various equivalent ways to declare your Docusaurus config.
 // See: https://docusaurus.io/docs/api/docusaurus-config
 
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 
 import { themes as prismThemes } from 'prism-react-renderer';
 
@@ -14,7 +14,7 @@ import { themes as prismThemes } from 'prism-react-renderer';
 // one as "2026.9.2-3-gabc1234", so a deployment says which commit it is rather
 // than which release it follows. No fallback: the build already fails without
 // git history, which showLastUpdateTime below reads.
-const version = execSync('git describe --tags --always', {
+const version = execFileSync('git', ['describe', '--tags', '--always'], {
   encoding: 'utf8',
 }).trim();
 
