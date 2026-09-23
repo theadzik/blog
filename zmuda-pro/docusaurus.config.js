@@ -4,9 +4,19 @@
 // There are various equivalent ways to declare your Docusaurus config.
 // See: https://docusaurus.io/docs/api/docusaurus-config
 
+import { execFileSync } from 'node:child_process';
+
 import { themes as prismThemes } from 'prism-react-renderer';
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
+
+// Names a release build by its tag alone ("2026.9.2") and anything built after
+// one as "2026.9.2-3-gabc1234", so a deployment says which commit it is rather
+// than which release it follows. No fallback: the build already fails without
+// git history, which showLastUpdateTime below reads.
+const version = execFileSync('git', ['describe', '--tags', '--always'], {
+  encoding: 'utf8',
+}).trim();
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -75,6 +85,7 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
+      metadata: [{ name: 'version', content: version }],
       // Replace with your project's social card
       image: 'img/PPBN.webp',
       navbar: {

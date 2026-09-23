@@ -172,10 +172,13 @@
   .resume-contact-list {
     display: flex;
     flex-wrap: wrap;
+    /* Without this, items stretch and each baseline follows its own line box,
+       so the item containing "@" drops when that glyph hits a fallback font. */
+    align-items: baseline;
     gap: 0 0.75rem;
   }
 
-  .resume-contact-list li + li::before {
+  .resume-contact-list li::before {
     content: '·';
     margin-right: 0.75rem;
   }
