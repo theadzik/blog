@@ -38,27 +38,11 @@ jobs:
         working-directory: zmuda-pro
         run: pnpm install --frozen-lockfile
 
-      # High and above fails the job; moderate and below warn.
-      #
-      # The bar sat at critical while five unfixable high advisories were in the
-      # tree. Three are now resolved by pinned overrides and two are explicitly
-      # accepted, with rationale and a re-review date, in
-      # zmuda-pro/pnpm-workspace.yaml. Suppressing two known advisories by ID is
-      # a far narrower exception than disabling the whole severity tier.
       - name: Run security audit
         working-directory: zmuda-pro
         run: |
-          if ! pnpm audit --audit-level=high; then
-            echo "::error title=pnpm audit::High or critical severity advisory found"
-            exit 1
-          fi
-          if ! pnpm audit --audit-level=moderate; then
-            echo "::warning title=pnpm audit::Moderate severity advisory found"
-          fi
+          pnpm audit --audit-level=high
 
-      # `pnpm outdated` exits non-zero whenever anything is outdated, which would
-      # fail this required check for a purely informational reason. Dependabot
-      # owns dependency freshness; this is a summary only.
       - name: Check for outdated packages
         working-directory: zmuda-pro
         continue-on-error: true
