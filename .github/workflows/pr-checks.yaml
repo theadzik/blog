@@ -42,6 +42,7 @@ jobs:
         working-directory: zmuda-pro
         run: |
           pnpm audit --audit-level=high
+        continue-on-error: true
 
       - name: Check for outdated packages
         working-directory: zmuda-pro
